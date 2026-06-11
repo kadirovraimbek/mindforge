@@ -484,8 +484,8 @@ button,input,textarea{font-family:var(--font);border:none;outline:none}
 // ═══════════════════════════════════════
 // SUPABASE CONFIG — замени на свои ключи
 // ═══════════════════════════════════════
-const SB_URL = 'REPLACE_WITH_YOUR_SUPABASE_URL';      // напр. https://xxxx.supabase.co
-const SB_KEY = 'REPLACE_WITH_YOUR_SUPABASE_ANON_KEY'; // anon/public key
+const SB_URL = 'https://ipeicmyztlkagqcaiakt.supabase.co'; // v7-auth-fix      // напр. https://xxxx.supabase.co
+const SB_KEY = 'sb_publishable_bBihnEzpBs8-L6Hn_EhKUg_i4X0sINk'; // anon/public key
 
 // ═══════════════════════════════════════
 // AUTH STATE
@@ -1926,7 +1926,7 @@ function enterGame(){
 // BOOT
 // ═══════════════════════════════════════
 (async function boot(){
-  const isConfigured = SB_URL !== 'REPLACE_WITH_YOUR_SUPABASE_URL';
+  const isConfigured = SB_URL.indexOf('supabase.co') !== -1;
 
   if(isConfigured){
     const hadSession = restoreSession();
