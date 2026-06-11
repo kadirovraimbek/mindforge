@@ -1929,28 +1929,37 @@ function enterGame(){
   const isConfigured = SB_URL !== 'REPLACE_WITH_YOUR_SUPABASE_URL';
 
   if(isConfigured){
-    // Try to restore session from localStorage
     const hadSession = restoreSession();
     if(hadSession){
-      // Load cloud save
-      const hadCloud = await loadCloud();
-      if(!hadCloud) loadLocal();
-      if(G.name && G.name!=='Герой'){
-        document.getElementById('name-inp').value=G.name;
-        enterGame();
-        return;
+      // Verify session is still valid by attempting cloud load
+      try {
+        const hadCloud = await loadCloud();
+        if(!hadCloud) loadLocal();
+        if(G.name && G.name!=='Герой'){
+          document.getElementById('name-inp').value=G.name;
+          enterGame();
+          return;
+        }
+        // Session valid but no save — show intro (new user logged in)
+        showAuthModal('login');
+      } catch(e) {
+        // Session expired — clear it and show login
+        try{localStorage.removeItem('mf_session');}catch(e2){}
+        SB_SESSION=null; SB_USER=null;
+        showAuthModal('login');
       }
+    } else {
+      // No session at all — always show login on new device
+      showAuthModal('login');
     }
-    // No session — show auth modal
-    showAuthModal('login');
   } else {
-    // Supabase not configured — try local save, then show intro or game
+    // Supabase not configured — local mode
     const hadLocal = loadLocal();
     if(hadLocal && G.name && G.name!=='Герой'){
       document.getElementById('name-inp').value=G.name;
       enterGame();
     }
-    // Don't show auth modal if not configured — just let them play
+    // else just show intro as-is
   }
 })();
 </script>
