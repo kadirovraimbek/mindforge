@@ -1,0 +1,1947 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#080810">
+<title>MindForge RPG</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#070712;--surface:#0f0f22;--surface2:#151530;--surface3:#1b1b3a;
+  --gold:#f0c040;--gold2:#c8961a;--gold-glow:rgba(240,192,64,0.18);
+  --purple:#9d5cf5;--purple2:#7a3dd4;--purple-glow:rgba(157,92,245,0.18);
+  --blue:#38c4f0;--emerald:#2ecc71;--rose:#e74c3c;--amber:#f39c12;
+  --text:#eeeeff;--text2:#8888bb;--text3:#44446a;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --r:14px;--r-sm:9px;--r-xs:6px;
+  --font:'Inter',sans-serif;--display:'Cinzel',serif;
+}
+html,body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+button,input,textarea{font-family:var(--font);border:none;outline:none}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:rgba(157,92,245,.3);border-radius:2px}
+::selection{background:var(--purple);color:#fff}
+
+/* ── SCREENS ── */
+.screen{display:none;min-height:100vh;flex-direction:column}
+.screen.on{display:flex}
+
+/* ── INTRO ── */
+#s-intro{align-items:center;justify-content:center;text-align:center;padding:24px 20px;
+  background:radial-gradient(ellipse at 50% 20%,rgba(157,92,245,.15),transparent 65%),var(--bg)}
+.intro-glyph{font-size:80px;margin-bottom:20px;filter:drop-shadow(0 0 32px rgba(157,92,245,.7));animation:glyph 3.5s ease-in-out infinite}
+@keyframes glyph{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-14px) rotate(2deg)}}
+.intro-title{font-family:var(--display);font-size:clamp(26px,7vw,50px);font-weight:700;
+  background:linear-gradient(135deg,var(--gold),#fff 50%,var(--purple));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.intro-lore{font-size:14px;color:var(--text2);max-width:360px;margin:0 auto 28px;line-height:1.6}
+.name-field{width:100%;max-width:280px;background:var(--surface);border:1.5px solid var(--border2);border-radius:var(--r);
+  padding:13px 18px;color:var(--text);font-size:16px;text-align:center;margin-bottom:14px;transition:border-color .2s}
+.name-field:focus{border-color:var(--purple)}
+.class-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;max-width:360px;margin:0 auto 22px}
+.cls-card{padding:12px 8px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);
+  cursor:pointer;text-align:center;transition:all .18s}
+.cls-card:hover,.cls-card.picked{border-color:var(--purple);background:var(--purple-glow);box-shadow:0 0 18px rgba(157,92,245,.25)}
+.cls-emoji{font-size:26px;margin-bottom:5px}
+.cls-name{font-size:11px;font-weight:700;color:var(--text)}
+.cls-hint{font-size:9px;color:var(--text3);margin-top:2px}
+
+/* ── LAYOUT ── */
+#s-main{flex-direction:row}
+/* Mobile: bottom nav */
+@media(max-width:680px){
+  #s-main{flex-direction:column}
+  .sidebar{display:none}
+  .content{padding-bottom:70px}
+  .bottom-nav{display:flex}
+}
+@media(min-width:681px){
+  .bottom-nav{display:none}
+  .sidebar{display:flex}
+}
+
+/* ── SIDEBAR (desktop) ── */
+.sidebar{width:220px;min-width:220px;background:var(--surface);border-right:1px solid var(--border);
+  flex-direction:column;height:100vh;position:sticky;top:0;overflow-y:auto}
+.sb-hero{padding:14px 12px;border-bottom:1px solid var(--border)}
+.sb-avatar{width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,var(--purple2),var(--blue));
+  display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 8px;
+  box-shadow:0 0 18px rgba(157,92,245,.4)}
+.sb-name{font-family:var(--display);font-size:12px;text-align:center;color:var(--gold);margin-bottom:1px}
+.sb-cls{font-size:9px;text-align:center;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.sb-lvl{display:flex;align-items:center;justify-content:center;gap:5px;padding:5px;
+  background:var(--gold-glow);border-radius:var(--r-xs);margin-bottom:8px}
+.sb-lvl-num{font-family:var(--display);font-size:17px;font-weight:700;color:var(--gold)}
+.sb-lvl-lbl{font-size:9px;color:var(--gold2);text-transform:uppercase;letter-spacing:.06em}
+.mini-bar-row{margin-bottom:4px}
+.mini-bar-lbl{display:flex;justify-content:space-between;font-size:9px;margin-bottom:2px;color:var(--text3)}
+.mini-bar{height:4px;background:rgba(255,255,255,.05);border-radius:100px;overflow:hidden}
+.mini-bar-fill{height:100%;border-radius:100px;transition:width .5s ease}
+.sb-nav{padding:6px 8px;flex:1}
+.sb-section{font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;
+  font-weight:700;padding:4px 8px;margin-top:6px}
+.sb-btn{display:flex;align-items:center;gap:7px;width:100%;padding:8px 10px;border-radius:var(--r-xs);
+  background:none;color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;position:relative}
+.sb-btn:hover{background:var(--surface2);color:var(--text)}
+.sb-btn.on{background:var(--purple-glow);color:var(--purple)}
+.sb-btn .ico{font-size:14px;width:18px;text-align:center}
+.sb-badge{position:absolute;right:8px;font-size:9px;font-weight:700;background:var(--gold);color:#000;padding:2px 5px;border-radius:100px}
+.sb-stats{padding:10px 12px;border-top:1px solid var(--border);margin-top:auto}
+.ss-title{font-size:8px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:6px}
+.ss-row{display:flex;align-items:center;gap:5px;margin-bottom:4px}
+.ss-ico{font-size:11px}
+.ss-name{font-size:10px;color:var(--text2);flex:1}
+.ss-bar{flex:1;height:3px;background:rgba(255,255,255,.05);border-radius:100px;overflow:hidden;margin:0 3px}
+.ss-fill{height:100%;border-radius:100px;transition:width .5s ease}
+.ss-val{font-size:10px;font-weight:700;font-family:monospace}
+
+/* ── BOTTOM NAV (mobile) ── */
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:62px;background:var(--surface);
+  border-top:1px solid var(--border);z-index:50;align-items:center;justify-content:space-around;padding:0 4px}
+.bn-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;
+  background:none;cursor:pointer;border-radius:var(--r-xs);transition:all .15s;color:var(--text3);position:relative}
+.bn-btn.on{color:var(--purple)}
+.bn-ico{font-size:18px}
+.bn-lbl{font-size:9px;font-weight:600}
+.bn-dot{position:absolute;top:6px;right:calc(50% - 14px);width:7px;height:7px;background:var(--gold);border-radius:50%;display:none}
+.bn-dot.show{display:block}
+
+/* ── CONTENT ── */
+.content{flex:1;overflow-y:auto;min-height:100vh}
+.panel{display:none;padding:18px 16px;animation:fadeUp .22s ease}
+.panel.on{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── TYPOGRAPHY ── */
+.eyebrow{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);font-weight:700;margin-bottom:4px}
+.page-title{font-family:var(--display);font-size:clamp(17px,4vw,22px);font-weight:700;color:var(--gold);margin-bottom:4px}
+.page-sub{font-size:12px;color:var(--text2);line-height:1.5}
+
+/* ── CARDS ── */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px}
+.card-sm{padding:10px 12px}
+.ctitle{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:10px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:10px 18px;border-radius:var(--r-sm);
+  font-size:13px;font-weight:600;cursor:pointer;transition:all .15s;border:none}
+.btn-gold{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#000}
+.btn-gold:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(240,192,64,.3)}
+.btn-gold:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-purple{background:linear-gradient(135deg,var(--purple2),var(--purple));color:#fff}
+.btn-purple:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(157,92,245,.35)}
+.btn-purple:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-ghost{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
+.btn-ghost:hover{color:var(--text)}
+.btn-danger{background:rgba(231,76,60,.12);border:1px solid rgba(231,76,60,.25);color:var(--rose)}
+.btn-sm{padding:7px 13px;font-size:12px}
+.btn-xs{padding:5px 9px;font-size:11px}
+.btn-block{width:100%;justify-content:center}
+.ta{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);
+  padding:11px 12px;color:var(--text);font-size:13px;resize:none;line-height:1.6;
+  transition:border-color .2s;min-height:80px}
+.ta:focus{border-color:var(--purple)}
+
+/* ── STAT STRIP ── */
+.stat-strip{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+@media(max-width:360px){.stat-strip{grid-template-columns:repeat(2,1fr)}}
+.stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center}
+.stat-num{font-family:monospace;font-size:22px;font-weight:700;line-height:1}
+.stat-lbl{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--text3);font-weight:700;margin-top:4px}
+
+/* ── DAILY QUEST ── */
+.daily-card{background:linear-gradient(135deg,rgba(240,192,64,.07),rgba(157,92,245,.04)),var(--surface);
+  border:1px solid rgba(240,192,64,.18);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.daily-hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.daily-title{font-family:var(--display);font-size:13px;color:var(--gold)}
+.daily-sub{font-size:10px;color:var(--text3)}
+.dtask{display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--surface2);
+  border-radius:var(--r-xs);margin-bottom:5px;font-size:12px}
+.dtask.ok{opacity:.55}
+.dtask.ok .dtask-name{text-decoration:line-through;color:var(--text3)}
+.dtask-chk{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--text3);
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px}
+.dtask.ok .dtask-chk{background:var(--emerald);border-color:var(--emerald);color:#000}
+.dtask-name{flex:1}
+.dtask-xp{font-size:10px;font-weight:700;color:var(--gold)}
+
+/* ── GAMES GRID ── */
+.games-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:600px){.games-grid{grid-template-columns:repeat(3,1fr)}}
+.game-tile{padding:14px 11px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  cursor:pointer;text-align:center;transition:all .2s;position:relative;overflow:hidden}
+.game-tile:hover{transform:translateY(-2px);border-color:var(--border2)}
+.game-tile.locked{opacity:.38;cursor:not-allowed}
+.game-tile.locked:hover{transform:none}
+.game-tile.done-today::after{content:'✓';position:absolute;top:7px;right:9px;font-size:10px;
+  color:var(--emerald);font-weight:700}
+.game-tile-ico{font-size:28px;margin-bottom:7px}
+.game-tile-name{font-size:12px;font-weight:700;margin-bottom:2px}
+.game-tile-skill{font-size:9px;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:5px}
+.game-tile-xp{font-size:10px;font-weight:700;color:var(--gold);background:var(--gold-glow);
+  padding:2px 7px;border-radius:100px;display:inline-block}
+.game-tile-lock{font-size:9px;color:var(--text3);margin-top:4px}
+
+/* ── ENEMIES ── */
+.enemy-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:500px){.enemy-grid{grid-template-columns:repeat(3,1fr)}}
+.enemy-tile{padding:14px 10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.enemy-tile:hover{border-color:rgba(231,76,60,.35);transform:translateY(-2px)}
+.enemy-tile.locked{opacity:.35;cursor:not-allowed}
+.enemy-tile.locked:hover{transform:none}
+.enemy-emoji{font-size:36px;margin-bottom:6px;display:block;
+  filter:drop-shadow(0 0 10px rgba(231,76,60,.3));animation:eIdle 2.2s ease-in-out infinite}
+@keyframes eIdle{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+.enemy-name{font-size:12px;font-weight:700;color:var(--rose);margin-bottom:3px}
+.enemy-lv{font-size:9px;color:var(--text3);margin-bottom:6px}
+.enemy-reward{font-size:10px;font-weight:700;color:var(--gold)}
+.enemy-req{position:absolute;top:7px;right:8px;font-size:9px;color:var(--text3);
+  background:var(--surface2);padding:2px 5px;border-radius:4px}
+
+/* ── BATTLE ── */
+.battle-hud{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:10px}
+.battle-hud-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;gap:8px}
+.combatant{flex:1;min-width:0}
+.cb-name{font-family:var(--display);font-size:11px;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cb-name.hero{color:var(--emerald)}
+.cb-name.enemy{color:var(--rose);text-align:right}
+.cb-hp{height:7px;background:rgba(255,255,255,.05);border-radius:100px;overflow:hidden;margin-top:3px}
+.cb-hp-fill{height:100%;border-radius:100px;transition:width .4s ease}
+.cb-hp-fill.hero-fill{background:linear-gradient(90deg,var(--emerald),#4ade80)}
+.cb-hp-fill.enemy-fill{background:linear-gradient(90deg,var(--rose2),var(--rose))}
+.battle-vs{font-family:var(--display);font-size:14px;color:var(--text3);padding:0 8px;flex-shrink:0}
+.battle-timer{text-align:center;flex-shrink:0}
+.bt-num{font-family:monospace;font-size:20px;font-weight:700;color:var(--gold);
+  background:var(--gold-glow);padding:4px 10px;border-radius:var(--r-xs);display:block}
+.bt-lbl{font-size:8px;color:var(--text3);text-transform:uppercase;margin-top:2px}
+.battle-task-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.btc-header{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.btc-body{padding:14px}
+.battle-q{font-size:15px;font-weight:500;line-height:1.6;margin-bottom:12px;
+  padding:12px;background:rgba(157,92,245,.07);border-radius:var(--r-sm);border-left:2px solid var(--purple)}
+
+/* ── RESULT BOX ── */
+.result-box{background:var(--surface2);border-radius:var(--r);padding:18px;margin-top:12px;text-align:center;border:1px solid var(--border2)}
+.res-praise{font-family:var(--display);font-size:14px;color:var(--gold);margin-bottom:6px}
+.res-score{font-family:monospace;font-size:48px;font-weight:700;line-height:1}
+.res-label{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-top:3px}
+.res-xp{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;background:var(--gold-glow);
+  border:1px solid rgba(240,192,64,.25);border-radius:100px;font-size:13px;font-weight:700;color:var(--gold);margin:8px auto}
+.res-text{font-size:12px;color:var(--text2);line-height:1.6;margin:8px 0;max-width:420px;margin:8px auto}
+
+/* ── OUTCOME MODAL ── */
+.outcome-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);display:flex;
+  align-items:center;justify-content:center;z-index:100;padding:16px;backdrop-filter:blur(6px)}
+.outcome-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r);
+  padding:24px 20px;max-width:360px;width:100%;text-align:center;
+  animation:popIn .4s cubic-bezier(.34,1.56,.64,1)}
+@keyframes popIn{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
+.oc-emoji{font-size:52px;display:block;margin-bottom:10px}
+.oc-title{font-family:var(--display);font-size:20px;margin-bottom:6px}
+.oc-title.win{color:var(--gold)}.oc-title.lose{color:var(--rose)}
+.oc-rows{background:var(--surface2);border-radius:var(--r-sm);padding:12px;margin:12px 0}
+.oc-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;border-bottom:1px solid var(--border)}
+.oc-row:last-child{border-bottom:none}
+
+/* ── PROGRESS MAP ── */
+.map-wrap{position:relative;padding:10px 0}
+.map-path{display:flex;flex-direction:column;align-items:center;gap:0}
+.map-region{margin-bottom:8px;width:100%;max-width:500px;margin-left:auto;margin-right:auto}
+.map-region-title{text-align:center;font-size:10px;text-transform:uppercase;letter-spacing:.1em;
+  font-weight:700;color:var(--text3);margin-bottom:8px;padding:4px 0;border-bottom:1px solid var(--border)}
+.map-nodes-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}
+.map-node{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:default}
+.map-node-circle{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:20px;border:2px solid var(--border);background:var(--surface2);
+  position:relative;transition:all .3s}
+.map-node-circle.done{background:rgba(46,204,113,.12);border-color:var(--emerald)}
+.map-node-circle.active{background:rgba(157,92,245,.18);border-color:var(--purple);
+  box-shadow:0 0 18px rgba(157,92,245,.3);animation:nodePulse 2s ease-in-out infinite}
+@keyframes nodePulse{0%,100%{box-shadow:0 0 18px rgba(157,92,245,.3)}50%{box-shadow:0 0 30px rgba(157,92,245,.6)}}
+.map-node-circle.locked{opacity:.3}
+.map-node-label{font-size:9px;font-weight:700;text-align:center;max-width:60px;line-height:1.3;color:var(--text2)}
+.map-connector-v{width:2px;height:20px;background:var(--border);margin:0 auto}
+.map-connector-v.done{background:var(--emerald)}
+.hero-marker{font-size:22px;text-align:center;margin-bottom:-4px;animation:heroFloat 1.5s ease-in-out infinite}
+@keyframes heroFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.map-legend{display:flex;gap:12px;flex-wrap:wrap;margin-top:14px;padding:10px 12px;background:var(--surface);border-radius:var(--r-sm);border:1px solid var(--border)}
+.ml-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--text2)}
+
+/* ── SKILL TREE ── */
+.skill-node{display:flex;align-items:center;gap:10px;padding:11px 12px;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r);margin-bottom:7px;transition:all .2s}
+.skill-node.unlocked{border-color:rgba(157,92,245,.35);background:var(--purple-glow)}
+.skill-node.maxed{border-color:rgba(240,192,64,.35);background:var(--gold-glow)}
+.sn-ico{font-size:20px;flex-shrink:0}
+.sn-body{flex:1;min-width:0}
+.sn-name{font-size:13px;font-weight:600;margin-bottom:1px}
+.sn-desc{font-size:10px;color:var(--text2);line-height:1.4}
+.sn-bar-wrap{height:4px;background:rgba(255,255,255,.05);border-radius:100px;overflow:hidden;margin-top:6px}
+.sn-bar{height:100%;border-radius:100px;transition:width .6s ease}
+.sn-val{margin-left:auto;font-family:monospace;font-size:14px;font-weight:700;flex-shrink:0}
+
+/* ── ACHIEVEMENTS ── */
+.ach-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(min-width:500px){.ach-grid{grid-template-columns:repeat(3,1fr)}}
+.ach-card{padding:12px 10px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);text-align:center}
+.ach-card.earned{border-color:rgba(240,192,64,.35);background:var(--gold-glow)}
+.ach-card.locked{opacity:.38}
+.ach-ico{font-size:26px;margin-bottom:5px}
+.ach-name{font-size:11px;font-weight:700;margin-bottom:2px}
+.ach-desc{font-size:9px;color:var(--text3);line-height:1.3}
+.ach-xp{font-size:9px;color:var(--gold);margin-top:4px;font-weight:700}
+
+/* ── CHAT ── */
+.chat-box{background:var(--surface2);border-radius:var(--r);overflow:hidden;border:1px solid var(--border)}
+.chat-msgs{height:260px;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:8px}
+.cmsg{max-width:88%;padding:9px 12px;border-radius:10px;font-size:13px;line-height:1.55;animation:fadeUp .2s ease}
+.cmsg.u{align-self:flex-end;background:var(--purple2);color:#fff;border-radius:10px 10px 3px 10px}
+.cmsg.a{align-self:flex-start;background:var(--surface3);color:var(--text);border-radius:10px 10px 10px 3px}
+.chat-row{padding:9px 11px;border-top:1px solid var(--border);display:flex;gap:7px}
+.chat-inp{flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:var(--r-xs);
+  padding:8px 11px;color:var(--text);font-size:13px;outline:none;transition:border-color .15s}
+.chat-inp:focus{border-color:var(--purple)}
+
+/* ── NOTIFS ── */
+.notif-wrap{position:fixed;top:12px;right:12px;display:flex;flex-direction:column;gap:6px;z-index:200;
+  pointer-events:none;max-width:260px}
+@media(max-width:680px){.notif-wrap{left:12px;right:12px;max-width:none}}
+.notif{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r-sm);
+  padding:10px 12px;display:flex;align-items:flex-start;gap:8px;pointer-events:all;
+  animation:slideIn .3s cubic-bezier(.34,1.3,.64,1);box-shadow:0 4px 20px rgba(0,0,0,.4)}
+.notif.xp{border-color:rgba(240,192,64,.4)}
+.notif.level{border-color:var(--purple);background:var(--purple-glow)}
+.notif.win{border-color:rgba(240,192,64,.5);background:var(--gold-glow)}
+.notif.skill{border-color:rgba(56,196,240,.35)}
+.notif-ico{font-size:18px;flex-shrink:0}
+.notif-body{flex:1}
+.notif-title{font-size:12px;font-weight:700;color:var(--text)}
+.notif-sub{font-size:10px;color:var(--text2);margin-top:1px}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideOut{to{opacity:0;transform:translateX(20px)}}
+
+/* ── XP FLOAT ── */
+.xp-float{position:fixed;font-family:var(--display);font-size:20px;font-weight:700;color:var(--gold);
+  pointer-events:none;z-index:300;text-shadow:0 0 16px rgba(240,192,64,.6);
+  animation:xpUp 1.6s ease forwards}
+@keyframes xpUp{0%{opacity:1;transform:translateY(0) scale(.8)}30%{opacity:1;transform:translateY(-25px) scale(1.1)}100%{opacity:0;transform:translateY(-80px) scale(.8)}}
+
+/* ── MISC ── */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 7px;border-radius:100px;font-size:10px;font-weight:700}
+.badge-gold{background:var(--gold-glow);color:var(--gold)}
+.badge-purple{background:var(--purple-glow);color:var(--purple)}
+.badge-green{background:rgba(46,204,113,.12);color:var(--emerald)}
+.badge-red{background:rgba(231,76,60,.12);color:var(--rose)}
+.divider{height:1px;background:var(--border);margin:12px 0}
+.gap8{display:flex;gap:8px;flex-wrap:wrap}
+.dots::after{content:'';animation:dots 1s infinite}
+@keyframes dots{0%{content:'.'}33%{content:'..'}66%{content:'...'}100%{content:'.'}}
+</style>
+
+<!-- INTRO -->
+<div id="s-intro" class="screen on">
+  <div class="intro-glyph">🧠</div>
+  <div class="intro-title">MindForge RPG</div>
+  <div class="intro-lore">Твой разум — оружие. Побеждай монстров выполняя когнитивные задания. Каждая победа делает тебя сильнее.</div>
+  <input class="name-field" id="name-inp" placeholder="Имя героя..." maxlength="18">
+  <div class="class-row">
+    <div class="cls-card picked" onclick="pickClass('mage',this)">
+      <div class="cls-emoji">🔮</div><div class="cls-name">Маг</div><div class="cls-hint">Логика +20%</div>
+    </div>
+    <div class="cls-card" onclick="pickClass('warrior',this)">
+      <div class="cls-emoji">⚔️</div><div class="cls-name">Воин</div><div class="cls-hint">Аргум. +20%</div>
+    </div>
+    <div class="cls-card" onclick="pickClass('scholar',this)">
+      <div class="cls-emoji">📚</div><div class="cls-name">Учёный</div><div class="cls-hint">Память +20%</div>
+    </div>
+  </div>
+  <button class="btn btn-gold" onclick="beginGame()" style="font-size:15px;padding:13px 34px">⚔️ Начать путь</button>
+</div>
+
+<!-- MAIN -->
+<div id="s-main" class="screen">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-hero">
+      <div class="sb-avatar" id="sb-av">🔮</div>
+      <div class="sb-name" id="sb-name">Герой</div>
+      <div class="sb-cls" id="sb-cls">Маг Разума</div>
+      <div class="sb-lvl"><span style="font-size:14px">⭐</span><div class="sb-lvl-num" id="sb-lv">1</div><div class="sb-lvl-lbl">Уровень</div></div>
+      <div class="mini-bar-row"><div class="mini-bar-lbl"><span>HP</span><span id="sb-hp-t" style="color:var(--rose)">100/100</span></div><div class="mini-bar"><div class="mini-bar-fill" id="sb-hp" style="width:100%;background:linear-gradient(90deg,var(--rose2),var(--rose))"></div></div></div>
+      <div class="mini-bar-row"><div class="mini-bar-lbl"><span>XP</span><span id="sb-xp-t" style="color:var(--purple)">0/300</span></div><div class="mini-bar"><div class="mini-bar-fill" id="sb-xp" style="width:0%;background:linear-gradient(90deg,var(--purple2),var(--purple))"></div></div></div>
+    </div>
+    <div class="sb-nav">
+      <div class="sb-section">Главное</div>
+      <button class="sb-btn on" onclick="go('dashboard')"><span class="ico">🏰</span>Крепость</button>
+      <button class="sb-btn" onclick="go('map')"><span class="ico">🗺️</span>Карта пути</button>
+      <button class="sb-btn" onclick="go('battle')"><span class="ico">⚔️</span>Сражение<span class="sb-badge" id="sb-battle-badge" style="display:none">!</span></button>
+      <button class="sb-btn" onclick="go('training')"><span class="ico">🎮</span>Тренировки</button>
+      <div class="sb-section">Прогресс</div>
+      <button class="sb-btn" onclick="go('quests')"><span class="ico">📜</span>Квесты<span class="sb-badge" id="sb-q-badge">3</span></button>
+      <button class="sb-btn" onclick="go('skills')"><span class="ico">✨</span>Навыки</button>
+      <button class="sb-btn" onclick="go('achievements')"><span class="ico">🏅</span>Достижения</button>
+      <div class="sb-section">Разум</div>
+      <button class="sb-btn" onclick="go('coach')"><span class="ico">🤖</span>AI-тренер</button>
+    </div>
+    <div class="sb-stats">
+      <div class="ss-title">Характеристики</div>
+      <div class="ss-row"><span class="ss-ico">🧩</span><span class="ss-name">Память</span><div class="ss-bar"><div class="ss-fill" id="ss-mem" style="width:5%;background:var(--blue)"></div></div><span class="ss-val" id="ss-mem-v" style="color:var(--blue)">5</span></div>
+      <div class="ss-row"><span class="ss-ico">🔬</span><span class="ss-name">Логика</span><div class="ss-bar"><div class="ss-fill" id="ss-log" style="width:5%;background:var(--emerald)"></div></div><span class="ss-val" id="ss-log-v" style="color:var(--emerald)">5</span></div>
+      <div class="ss-row"><span class="ss-ico">⚔️</span><span class="ss-name">Аргумент</span><div class="ss-bar"><div class="ss-fill" id="ss-arg" style="width:5%;background:var(--purple)"></div></div><span class="ss-val" id="ss-arg-v" style="color:var(--purple)">5</span></div>
+      <div class="ss-row"><span class="ss-ico">💡</span><span class="ss-name">Компрессия</span><div class="ss-bar"><div class="ss-fill" id="ss-comp" style="width:5%;background:var(--gold)"></div></div><span class="ss-val" id="ss-comp-v" style="color:var(--gold)">5</span></div>
+      <div class="ss-row"><span class="ss-ico">⚡</span><span class="ss-name">Скорость</span><div class="ss-bar"><div class="ss-fill" id="ss-spd" style="width:5%;background:var(--rose)"></div></div><span class="ss-val" id="ss-spd-v" style="color:var(--rose)">5</span></div>
+    </div>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <!-- DASHBOARD -->
+    <div id="p-dashboard" class="panel on">
+      <div style="margin-bottom:14px"><div class="eyebrow">Командный центр</div><div class="page-title" id="d-welcome">Крепость Разума</div><div class="page-sub" id="d-tier">Начни свой путь</div></div>
+      <div class="daily-card"><div class="daily-hdr"><span style="font-size:18px">📜</span><div><div class="daily-title">Ежедневные задания</div><div class="daily-sub">Выполни все → бонус ×1.5</div></div><span id="d-daily-timer" style="margin-left:auto;font-size:10px;color:var(--text3)"></span></div><div id="d-daily-tasks"></div></div>
+      <div class="stat-strip" id="d-stats"></div>
+      <div class="card" style="margin-bottom:10px"><div class="ctitle">✨ Прогресс навыков</div><div id="d-skills"></div></div>
+      <div class="card"><div class="ctitle">⚡ Последние события</div><div id="d-log" style="font-size:11px;color:var(--text2);line-height:2">Начни первую тренировку!</div></div>
+    </div>
+
+    <!-- MAP -->
+    <div id="p-map" class="panel">
+      <div style="margin-bottom:14px"><div class="eyebrow">Путешествие</div><div class="page-title">🗺️ Карта прогресса</div><div class="page-sub">Твой герой движется вперёд с каждой победой</div></div>
+      <div id="map-container"></div>
+    </div>
+
+    <!-- BATTLE -->
+    <div id="p-battle" class="panel">
+      <div id="b-select"><div style="margin-bottom:14px"><div class="eyebrow">Арена</div><div class="page-title">⚔️ Выбери противника</div><div class="page-sub">Побеждай монстров, выполняя задания под таймером</div></div><div class="enemy-grid" id="enemy-grid"></div></div>
+      <div id="b-arena" style="display:none"></div>
+    </div>
+
+    <!-- TRAINING -->
+    <div id="p-training" class="panel">
+      <div id="t-list"><div style="margin-bottom:14px"><div class="eyebrow">Тренировочный зал</div><div class="page-title">🎮 Тренировки</div><div class="page-sub">Прокачивай навыки. Минимум 1 игра по каждому типу.</div></div><div class="games-grid" id="games-grid"></div></div>
+      <div id="t-arena" style="display:none"></div>
+    </div>
+
+    <!-- QUESTS -->
+    <div id="p-quests" class="panel">
+      <div style="margin-bottom:14px"><div class="eyebrow">Журнал</div><div class="page-title">📜 Книга квестов</div></div>
+      <div id="quests-body"></div>
+    </div>
+
+    <!-- SKILLS -->
+    <div id="p-skills" class="panel">
+      <div style="margin-bottom:14px"><div class="eyebrow">Развитие</div><div class="page-title">✨ Дерево навыков</div><div class="page-sub">Прокачивай навыки, выполняя тренировки</div></div>
+      <div id="skills-body"></div>
+    </div>
+
+    <!-- ACHIEVEMENTS -->
+    <div id="p-achievements" class="panel">
+      <div style="margin-bottom:14px"><div class="eyebrow">Зал славы</div><div class="page-title">🏅 Достижения</div></div>
+      <div class="ach-grid" id="ach-grid"></div>
+    </div>
+
+    <!-- COACH -->
+    <div id="p-coach" class="panel">
+      <div style="margin-bottom:14px"><div class="eyebrow">Наставник</div><div class="page-title">🤖 AI-тренер</div><div class="page-sub">Задай вопрос, получи задачу, потренируй мышление</div></div>
+      <div class="chat-box" style="margin-bottom:10px">
+        <div class="chat-msgs" id="coach-msgs"><div class="cmsg a">Приветствую, герой! Я твой когнитивный наставник. Дам задачу на логику, разберу аргумент, задам провокационный вопрос. С чего начнём? ⚔️</div></div>
+        <div class="chat-row"><input class="chat-inp" id="coach-inp" placeholder="Спроси наставника..." onkeydown="if(event.key==='Enter')coachSend()"><button class="btn btn-purple btn-sm" onclick="coachSend()">↑</button></div>
+      </div>
+      <div class="gap8">
+        <button class="btn btn-ghost btn-xs" onclick="coachQ('Дай сложную задачу на логику')">🎯 Задача</button>
+        <button class="btn btn-ghost btn-xs" onclick="coachQ('Задай провокационный вопрос для аргументации')">🔥 Провокация</button>
+        <button class="btn btn-ghost btn-xs" onclick="coachQ('Дай технику запоминания')">🧩 Память</button>
+        <button class="btn btn-ghost btn-xs" onclick="coachQ('Задача на критическое мышление')">🔬 Критика</button>
+        <button class="btn btn-ghost btn-xs" onclick="coachQ('Оцени мои навыки и что развивать')">📊 Анализ</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav" id="bottom-nav">
+  <button class="bn-btn on" onclick="go('dashboard')" id="bn-dashboard"><div class="bn-ico">🏰</div><div class="bn-lbl">Главная</div></button>
+  <button class="bn-btn" onclick="go('map')" id="bn-map"><div class="bn-ico">🗺️</div><div class="bn-lbl">Карта</div></button>
+  <button class="bn-btn" onclick="go('battle')" id="bn-battle"><div class="bn-ico">⚔️</div><div class="bn-lbl">Бой</div><div class="bn-dot" id="bn-battle-dot"></div></button>
+  <button class="bn-btn" onclick="go('training')" id="bn-training"><div class="bn-ico">🎮</div><div class="bn-lbl">Игры</div></button>
+  <button class="bn-btn" onclick="go('quests')" id="bn-quests"><div class="bn-ico">📜</div><div class="bn-lbl">Квесты</div><div class="bn-dot" id="bn-q-dot"></div></button>
+</nav>
+
+<!-- OUTCOME -->
+<div id="outcome" class="outcome-overlay" style="display:none"><div class="outcome-box" id="outcome-box"></div></div>
+
+<!-- NOTIFS -->
+<div class="notif-wrap" id="notif-wrap"></div>
+
+<script>
+// ═══════════════════════════════════════
+// ═══════════════════════════════════════
+// SUPABASE CONFIG — замени на свои ключи
+// ═══════════════════════════════════════
+const SB_URL = 'ipeicmyztlkagqcaiakt';      // напр. https://xxxx.supabase.co
+const SB_KEY = 'sb_publishable_bBihnEzpBs8-L6Hn_EhKUg_i4X0sINk'; // anon/public key
+
+// ═══════════════════════════════════════
+// AUTH STATE
+// ═══════════════════════════════════════
+let SB_USER = null; // текущий пользователь Supabase
+let SB_SESSION = null;
+let SAVE_DEBOUNCE = null;
+
+// ═══════════════════════════════════════
+// SUPABASE HELPERS
+// ═══════════════════════════════════════
+async function sbFetch(path, method='GET', body=null){
+  const opts = {
+    method,
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': `Bearer ${SB_SESSION?.access_token || SB_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': method==='POST'?'return=representation':'',
+    }
+  };
+  if(body) opts.body = JSON.stringify(body);
+  const r = await fetch(SB_URL + path, opts);
+  if(!r.ok){ const e=await r.text(); throw new Error(e); }
+  const txt = await r.text();
+  return txt ? JSON.parse(txt) : null;
+}
+
+// Auth: sign up
+async function sbSignUp(email, password){
+  const r = await fetch(`${SB_URL}/auth/v1/signup`, {
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+    body: JSON.stringify({email, password})
+  });
+  const d = await r.json();
+  if(d.error) throw new Error(d.error.message||d.msg||'Ошибка регистрации');
+  return d;
+}
+
+// Auth: sign in
+async function sbSignIn(email, password){
+  const r = await fetch(`${SB_URL}/auth/v1/token?grant_type=password`, {
+    method:'POST',
+    headers:{'apikey':SB_KEY,'Content-Type':'application/json'},
+    body: JSON.stringify({email, password})
+  });
+  const d = await r.json();
+  if(d.error) throw new Error(d.error.message||d.msg||'Неверный email или пароль');
+  SB_SESSION = d;
+  SB_USER = d.user;
+  // persist session
+  try{ localStorage.setItem('mf_session', JSON.stringify({access_token:d.access_token,refresh_token:d.refresh_token,user:d.user})); }catch(e){}
+  return d;
+}
+
+// Auth: sign out
+async function sbSignOut(){
+  try{
+    await fetch(`${SB_URL}/auth/v1/logout`, {
+      method:'POST',
+      headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_SESSION?.access_token}`}
+    });
+  }catch(e){}
+  SB_SESSION=null;SB_USER=null;
+  try{localStorage.removeItem('mf_session');}catch(e){}
+}
+
+// Restore session from localStorage
+function restoreSession(){
+  try{
+    const raw = localStorage.getItem('mf_session');
+    if(raw){ const s=JSON.parse(raw); SB_SESSION=s; SB_USER=s.user; return true; }
+  }catch(e){}
+  return false;
+}
+
+// ═══════════════════════════════════════
+// CLOUD SAVE / LOAD
+// ═══════════════════════════════════════
+const SAVE_LOCAL = 'mf_rpg_v5';
+
+// Always save locally immediately
+function saveLocal(){
+  try{ localStorage.setItem(SAVE_LOCAL, JSON.stringify(G)); }catch(e){}
+}
+
+// Save to Supabase (debounced 2s to avoid too many requests)
+function save(){
+  saveLocal();
+  if(!SB_USER) return;
+  clearTimeout(SAVE_DEBOUNCE);
+  SAVE_DEBOUNCE = setTimeout(saveCloud, 2000);
+}
+
+async function saveCloud(){
+  if(!SB_USER) return;
+  try{
+    // Upsert: insert or update by user_id
+    await sbFetch('/rest/v1/player_saves', 'POST', {
+      user_id: SB_USER.id,
+      game_state: G,
+      updated_at: new Date().toISOString()
+    });
+    showSaveIndicator();
+  }catch(e){ console.warn('Cloud save failed:', e.message); }
+}
+
+async function loadCloud(){
+  if(!SB_USER) return false;
+  try{
+    const rows = await sbFetch(`/rest/v1/player_saves?user_id=eq.${SB_USER.id}&select=game_state&limit=1`);
+    if(rows && rows.length > 0 && rows[0].game_state){
+      Object.assign(G, rows[0].game_state);
+      saveLocal(); // sync to local too
+      return true;
+    }
+  }catch(e){ console.warn('Cloud load failed:', e.message); }
+  return false;
+}
+
+function loadLocal(){
+  try{
+    const r = localStorage.getItem(SAVE_LOCAL);
+    if(r){ Object.assign(G, JSON.parse(r)); return true; }
+  }catch(e){}
+  return false;
+}
+
+function showSaveIndicator(){
+  let el = document.getElementById('save-indicator');
+  if(!el){ el=document.createElement('div'); el.id='save-indicator';
+    el.style.cssText='position:fixed;bottom:72px;right:12px;font-size:10px;color:var(--emerald);background:rgba(46,204,113,.12);border:1px solid rgba(46,204,113,.2);padding:3px 8px;border-radius:100px;z-index:99;transition:opacity .5s';
+    document.body.appendChild(el); }
+  el.textContent='☁️ Сохранено';el.style.opacity='1';
+  setTimeout(()=>el.style.opacity='0', 2500);
+}
+
+// ═══════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════
+const G={
+  name:'Герой',heroClass:'mage',level:1,xp:0,xpNext:300,
+  hp:100,maxHp:100,gold:0,
+  skills:{memory:5,logic:5,argumentation:5,compression:5,speed:5},
+  totalBattles:0,battlesWon:0,totalTrainings:0,
+  streak:1,lastDay:null,
+  dailyDate:null,dailyDone:{},dailyTasks:null,dailyBonusGiven:false,
+  questsDone:[],achievementsDone:[],
+  gamesPlayed:{},highScores:{},skillTrainings:{},enemiesDefeated:[],
+  activityLog:[],
+  unlockedGames:['memory_match','word_chain','anagram'],
+  mapPosition:0,
+};
+
+const CLASSES={
+  mage:{ico:'🔮',name:'Маг Разума',bonus:'logic'},
+  warrior:{ico:'⚔️',name:'Воин Духа',bonus:'argumentation'},
+  scholar:{ico:'📚',name:'Учёный',bonus:'memory'},
+};
+
+// ═══════════════════════════════════════
+// ENEMIES
+// ═══════════════════════════════════════
+const ENEMIES=[
+  {id:'slime',name:'Слизь Забвения',emoji:'🫧',level:1,hp:3,tasks:1,time:50,xp:35,gold:6,skills:['memory'],req:1},
+  {id:'goblin',name:'Гоблин-Демагог',emoji:'👺',level:2,hp:4,tasks:2,time:60,xp:60,gold:12,skills:['argumentation','logic'],req:1},
+  {id:'specter',name:'Призрак Хаоса',emoji:'👻',level:4,hp:5,tasks:2,time:45,xp:95,gold:20,skills:['memory','speed'],req:3},
+  {id:'witch',name:'Ведьма Иллюзий',emoji:'🧙‍♀️',level:6,hp:6,tasks:3,time:70,xp:150,gold:28,skills:['logic','compression'],req:5},
+  {id:'dragon',name:'Дракон Энтропии',emoji:'🐉',level:8,hp:8,tasks:3,time:90,xp:240,gold:45,skills:['argumentation','memory','logic'],req:7},
+  {id:'void_lord',name:'Владыка Пустоты',emoji:'🌑',level:12,hp:10,tasks:4,time:120,xp:400,gold:70,skills:['memory','logic','argumentation','compression'],req:10},
+];
+
+// ═══════════════════════════════════════
+// GAMES
+// ═══════════════════════════════════════
+const GAMES=[
+  {key:'memory_match',  name:'Мнемо-матрица',     ico:'🧩',skill:'memory',       skillName:'Память',       color:'#38c4f0',xp:[20,60], req:1},
+  {key:'word_chain',    name:'Цепочка смыслов',   ico:'🔗',skill:'logic',        skillName:'Логика',       color:'#2ecc71',xp:[15,45], req:1},
+  {key:'anagram',       name:'Анаграмма',          ico:'🔡',skill:'speed',        skillName:'Скорость',     color:'#e74c3c',xp:[20,50], req:1},
+  {key:'compression',   name:'Компрессор идей',   ico:'💡',skill:'compression',  skillName:'Компрессия',   color:'#f0c040',xp:[30,90], req:2},
+  {key:'debate',        name:'Дебаты с AI',        ico:'⚔️',skill:'argumentation',skillName:'Аргументация', color:'#9d5cf5',xp:[40,120],req:2},
+  {key:'sequence',      name:'Последовательность',ico:'🔢',skill:'logic',        skillName:'Логика',       color:'#2ecc71',xp:[20,55], req:3},
+  {key:'fast_facts',    name:'Быстрые факты',      ico:'⚡',skill:'speed',        skillName:'Скорость',     color:'#e74c3c',xp:[25,60], req:3},
+  {key:'memory_palace', name:'Дворец памяти',      ico:'🏛️',skill:'memory',       skillName:'Память',       color:'#38c4f0',xp:[35,90], req:4},
+  {key:'socratic',      name:'Сократ',             ico:'🦉',skill:'argumentation',skillName:'Аргументация', color:'#9d5cf5',xp:[50,130],req:5},
+  {key:'story_compress',name:'Суть истории',       ico:'📖',skill:'compression',  skillName:'Компрессия',   color:'#f0c040',xp:[30,85], req:5},
+];
+
+// ═══════════════════════════════════════
+// MAP NODES
+// ═══════════════════════════════════════
+const MAP_NODES=[
+  {id:'start',ico:'🌱',label:'Рождение',xpReq:0,region:'Долина новичков'},
+  {id:'m1',ico:'🧩',label:'Память I',xpReq:80,skill:'memory',region:'Долина новичков'},
+  {id:'l1',ico:'🔬',label:'Логика I',xpReq:150,skill:'logic',region:'Долина новичков'},
+  {id:'a1',ico:'⚔️',label:'Дебаты I',xpReq:250,skill:'argumentation',region:'Горы аргументов'},
+  {id:'c1',ico:'💡',label:'Компрессия I',xpReq:380,skill:'compression',region:'Горы аргументов'},
+  {id:'thinker',ico:'🔮',label:'Мыслитель',xpReq:500,region:'Горы аргументов'},
+  {id:'m2',ico:'🏛️',label:'Дворец памяти',xpReq:750,skill:'memory',region:'Цитадель мудрости'},
+  {id:'l2',ico:'🔭',label:'Критик',xpReq:1100,skill:'logic',region:'Цитадель мудрости'},
+  {id:'a2',ico:'🗣️',label:'Оратор',xpReq:1500,skill:'argumentation',region:'Цитадель мудрости'},
+  {id:'sage',ico:'🧙',label:'Мудрец',xpReq:2000,region:'Вершина'},
+  {id:'archmage',ico:'⚡',label:'Архимаг',xpReq:5000,region:'Вершина'},
+];
+
+// ═══════════════════════════════════════
+// QUESTS
+// ═══════════════════════════════════════
+const QUESTS=[
+  {id:'q_first_battle',ico:'⚔️',name:'Первая кровь',desc:'Победи первого монстра',xp:50,gold:10,req:{battlesWon:1}},
+  {id:'q_mem3',ico:'🧩',name:'Тренировка памяти',desc:'Сыграй в Мнемо-матрицу 3 раза',xp:60,gold:8,req:{game:'memory_match',count:3}},
+  {id:'q_logic5',ico:'🔬',name:'Путь логики',desc:'5 тренировок по логике',xp:80,gold:12,req:{skillTrain:'logic',count:5}},
+  {id:'q_debate3',ico:'🗣️',name:'Дебатёр',desc:'3 раунда дебатов',xp:100,gold:20,req:{game:'debate',count:3}},
+  {id:'q_comp2',ico:'💡',name:'Компрессор',desc:'Получи 70+ в Компрессоре 2 раза',xp:90,gold:15,req:{game:'compression',count:2,score:70}},
+  {id:'q_streak3',ico:'🔥',name:'3 дня подряд',desc:'Заходи 3 дня подряд',xp:70,gold:10,req:{streak:3}},
+  {id:'q_level5',ico:'⭐',name:'Восхождение',desc:'Достигни 5 уровня',xp:150,gold:30,req:{level:5}},
+  {id:'q_dragon',ico:'🐉',name:'Драконоборец',desc:'Победи Дракона Энтропии',xp:250,gold:50,req:{enemy:'dragon'}},
+  {id:'q_all30',ico:'✨',name:'Универсал',desc:'Все навыки 30+',xp:200,gold:40,req:{allSkills:30}},
+];
+
+// ═══════════════════════════════════════
+// ACHIEVEMENTS
+// ═══════════════════════════════════════
+const ACHS=[
+  {id:'first_step',ico:'🌱',name:'Первый шаг',desc:'Начал путь',xp:10},
+  {id:'first_battle',ico:'⚔️',name:'Боевое крещение',desc:'Первый бой',xp:20},
+  {id:'xp100',ico:'💫',name:'Сотня',desc:'100 XP заработано',xp:15},
+  {id:'xp500',ico:'⚡',name:'Пятисотый',desc:'500 XP',xp:25},
+  {id:'xp2000',ico:'🌟',name:'Две тысячи',desc:'2000 XP',xp:50},
+  {id:'level5',ico:'🔮',name:'Мыслитель',desc:'5-й уровень',xp:40},
+  {id:'level10',ico:'🧙',name:'Архимаг',desc:'10-й уровень',xp:80},
+  {id:'streak7',ico:'🔥',name:'7 дней',desc:'Серия 7 дней',xp:60},
+  {id:'mem50',ico:'🏛️',name:'Дворец памяти',desc:'Память 50+',xp:30},
+  {id:'log50',ico:'🔬',name:'Логик',desc:'Логика 50+',xp:30},
+  {id:'arg50',ico:'🗣️',name:'Оратор',desc:'Аргументация 50+',xp:30},
+  {id:'all30',ico:'✨',name:'Универсал',desc:'Все навыки 30+',xp:50},
+  {id:'dragon',ico:'🐉',name:'Драконоборец',desc:'Победил дракона',xp:100},
+  {id:'perf5',ico:'🎯',name:'Перфекционист',desc:'80+ баллов 5 раз',xp:60},
+];
+
+// ═══════════════════════════════════════
+// HUGE COMPRESSION BANK
+// ═══════════════════════════════════════
+const COMP_BANK=[
+  {topic:'Эффект Даннинга-Крюгера',text:'Люди с низким уровнем компетентности склонны переоценивать свои способности. Они не обладают достаточными знаниями, чтобы осознать собственные ошибки. Парадоксально, эксперты часто недооценивают свои знания — они полагают, что то, что легко для них, легко для всех. Этот феномен описан в 1999 году Даннингом и Крюгером.',diff:1},
+  {topic:'Феномен потока',text:'Поток — состояние полного погружения в деятельность. Человек теряет ощущение времени, действует на автопилоте с максимальной эффективностью. Возникает на пересечении высокого мастерства и сложной задачи. Слишком лёгкая задача вызывает скуку, слишком сложная — тревогу.',diff:1},
+  {topic:'Когнитивные искажения',text:'Наш мозг использует упрощённые эвристики, которые в большинстве случаев работают хорошо, но в определённых ситуациях приводят к систематическим ошибкам. Мы склонны видеть паттерны там, где их нет, подтверждать уже существующие убеждения и недооценивать случайность.',diff:1},
+  {topic:'Нейропластичность',text:'Мозг способен изменять свою структуру и функции в ответ на опыт обучения. Нейронные связи укрепляются при повторении и ослабевают при неиспользовании. Именно поэтому регулярные тренировки ума дают реальный измеримый результат даже в зрелом возрасте.',diff:1},
+  {topic:'Прокрастинация',text:'Откладывание задач на потом часто вызвано не ленью, а страхом провала или перфекционизмом. Мозг воспринимает сложные задачи как угрозу и избегает их. Техника «2 минуты» — начни делать всего 2 минуты — помогает обойти эту защитную реакцию.',diff:1},
+  {topic:'Эффект якоря',text:'Первая увиденная информация непропорционально влияет на все последующие суждения. Если вам сначала назвали высокую цену, любая следующая цена покажется разумной по сравнению. Этот эффект используется в переговорах, маркетинге и политической риторике.',diff:2},
+  {topic:'Подтверждение предвзятости',text:'Люди склонны искать, интерпретировать и запоминать информацию так, чтобы подтвердить уже существующие убеждения. Мы подсознательно игнорируем факты, противоречащие нашим взглядам, и придаём непропорциональное значение тем, которые их поддерживают. Именно поэтому споры в интернете редко меняют чьи-то убеждения.',diff:2},
+  {topic:'Эффект Зейгарник',text:'Незавершённые задачи занимают в памяти непропорционально много места. Официанты прекрасно помнят незакрытые заказы, но сразу забывают их после оплаты. Именно поэтому недосмотренные сериалы и незакрытые гештальты так сильно нас тревожат и привлекают внимание.',diff:2},
+  {topic:'Парадокс Стокдейла',text:'Выжившие в экстремальных ситуациях сочетают два качества: непоколебимую веру в конечную победу и готовность смотреть правде в глаза, какой бы жестокой она ни была. Слепой оптимизм убивал — те, кто верил, что выйдут к Рождеству, погибали. Реализм плюс вера — выживали.',diff:2},
+  {topic:'Закон Хика',text:'Время принятия решения увеличивается логарифмически с увеличением числа вариантов выбора. Именно поэтому меню с 50 позициями приводит к параличу выбора, а опытные дизайнеры сознательно ограничивают количество опций. Меньше — значит быстрее и часто лучше.',diff:2},
+  {topic:'Ложная дихотомия',text:'Логическая ошибка, при которой сложная проблема представляется как выбор между двумя взаимоисключающими вариантами, хотя реальность многограннее. «Ты либо с нами, либо против нас» — классический пример. Критическое мышление требует всегда искать третий, четвёртый вариант.',diff:2},
+  {topic:'Эффект прожектора',text:'Люди переоценивают, насколько другие замечают их ошибки, внешность и поведение. В реальности окружающие заняты собой и обращают на нас куда меньше внимания, чем нам кажется. Этот эффект — главная причина социальной тревожности и боязни публичных выступлений.',diff:2},
+  {topic:'Теория накопленного преимущества',text:'Небольшое начальное преимущество со временем накапливается и создаёт огромный разрыв. Тот, кто научился читать чуть раньше, читает больше, становится умнее, получает лучшую работу. Успех порождает условия для нового успеха. Это объясняет, почему богатые становятся богаче, а хорошие спортсмены — ещё лучше.',diff:3},
+  {topic:'Антихрупкость',text:'Нассим Талеб предложил концепцию систем, которые не просто устойчивы к потрясениям, но становятся сильнее от стресса и хаоса. Мышцы растут от нагрузки, иммунитет укрепляется от болезней, лучшие идеи рождаются в кризисе. Антихрупкость — противоположность хрупкости, но это не просто прочность.',diff:3},
+  {topic:'Социальная дилемма заключённого',text:'В классической игровой теории два рациональных игрока, действуя в собственных интересах, приходят к худшему результату для обоих. Эта структура объясняет гонку вооружений, загрязнение окружающей среды и многие социальные проблемы. Выход — либо коммуникация, либо внешнее принуждение к кооперации.',diff:3},
+  {topic:'Принцип Питера',text:'В иерархической системе каждый сотрудник поднимается до уровня своей некомпетентности. Хорошего инженера повышают до менеджера — и там он застревает навсегда, потому что плохо справляется. В итоге все позиции в организации занимают люди, недостаточно компетентные для своей роли.',diff:3},
+  {topic:'Черный лебедь',text:'Событие с тремя характеристиками: оно крайне редко, имеет огромные последствия и кажется очевидным в ретроспективе. Мы строим модели реальности на основе прошлого, но самые важные события выпадают из всех наших моделей. История движется чёрными лебедями, а не медленными тренд-линиями.',diff:3},
+  {topic:'Теория мемов Докинза',text:'Ричард Докинз предложил понятие «мем» — единица культурной информации, которая, подобно гену, реплицируется, мутирует и конкурирует за выживание в умах людей. Удачные мемы распространяются не потому что правдивы или полезны, а потому что «заразны» — легко запоминаются и хочется ими поделиться.',diff:3},
+  {topic:'Квантовая запутанность',text:'Два частицы могут быть «запутаны» — измерение одной мгновенно определяет состояние другой, где бы она ни находилась. Это не передача информации быстрее света, а нарушение классической локальности: реальность частицы не существует до момента измерения. Эйнштейн назвал это «жутким действием на расстоянии».',diff:3},
+  {topic:'Принцип наименьшего действия',text:'В природе физические системы всегда выбирают путь с наименьшим действием — интегралом энергии по времени. Свет преломляется так, чтобы пройти кратчайший путь по времени. Это один из самых глубоких принципов физики, из которого выводятся почти все законы механики и электромагнетизма.',diff:3},
+];
+
+// ═══════════════════════════════════════
+// PRAISE BANK
+// ═══════════════════════════════════════
+const PRAISE_BANK={
+  perfect:['🔥 Легенда! Безупречное исполнение!','⚡ Разум как молния — идеально!','💎 Бриллиантовый результат, герой!','🌟 Монстры дрожат от твоего мастерства!'],
+  great:['💪 Отличная работа, воин!','⭐ Впечатляет — продолжай в том же духе!','🎯 Почти идеально. Ты растёшь!','🔮 Магия разума в действии!'],
+  good:['👍 Хороший результат!','📈 Прогресс есть — двигайся дальше!','🌱 Ты крепнешь с каждым шагом!','✅ Задание выполнено — следующий!'],
+  fail:['💡 Хорошая попытка! В следующий раз лучше.','🔄 Не сдавайся — каждая ошибка учит.','⚔️ Монстр победил сегодня, но ты вернёшься!','🧠 Сложно? Значит ты растёшь!'],
+};
+function getPraise(s){const p=s>=90?PRAISE_BANK.perfect:s>=70?PRAISE_BANK.great:s>=50?PRAISE_BANK.good:PRAISE_BANK.fail;return p[Math.floor(Math.random()*p.length)]}
+
+// ═══════════════════════════════════════
+// XP / LEVELING
+// ═══════════════════════════════════════
+const XP_TABLE=[0,300,700,1300,2100,3200,4600,6300,8500,11000,14000,18000];
+function xpForLv(l){return XP_TABLE[Math.min(l,XP_TABLE.length-1)]||l*1500}
+let perfCount=0;
+
+function addXP(amt,src,ev){
+  const cls=CLASSES[G.heroClass];
+  let m=1;
+  if(src&&src.toLowerCase().includes(cls.bonus))m=1.2;
+  const final=Math.round(amt*m);
+  G.xp+=final;G.gold+=Math.round(final*.08);
+  if(ev){const r=ev.target?.getBoundingClientRect?.();if(r)floatXP(`+${final}XP`,r.left+r.width/2,r.top)}
+  // Level up
+  while(G.xp>=xpForLv(G.level)){
+    G.level++;G.maxHp=80+G.level*10;G.hp=G.maxHp;
+    unlockByLevel();
+    notify('level',`⭐ Уровень ${G.level}!`,`Новые враги и навыки открыты!`,4000);
+  }
+  G.xpNext=xpForLv(G.level);
+  addLog(`+${final} XP — ${src}`);
+  checkQuests();checkAchs();save();updateSidebar();updateMapPos();
+  return final;
+}
+
+function addSkill(k,amt){
+  G.skills[k]=Math.min(100,G.skills[k]+amt);
+  updateSidebar();checkQuests();checkAchs();save();
+}
+
+function unlockByLevel(){
+  ({2:['compression','debate'],3:['sequence','fast_facts'],4:['memory_palace'],5:['socratic','story_compress']}[G.level]||[]).forEach(g=>{if(!G.unlockedGames.includes(g))G.unlockedGames.push(g)});
+  ({3:['specter'],5:['witch'],7:['dragon'],10:['void_lord']}[G.level]||[]);
+}
+
+function updateMapPos(){
+  G.mapPosition=MAP_NODES.filter(n=>G.xp>=n.xpReq).length-1;
+}
+
+// ═══════════════════════════════════════
+// SIDEBAR
+// ═══════════════════════════════════════
+function updateSidebar(){
+  const cls=CLASSES[G.heroClass];
+  document.getElementById('sb-av').textContent=cls.ico;
+  document.getElementById('sb-name').textContent=G.name;
+  document.getElementById('sb-cls').textContent=cls.name;
+  document.getElementById('sb-lv').textContent=G.level;
+  document.getElementById('sb-hp-t').textContent=`${G.hp}/${G.maxHp}`;
+  document.getElementById('sb-hp').style.width=Math.round(G.hp/G.maxHp*100)+'%';
+  const xpCur=G.xp-xpForLv(G.level-1),xpNeed=xpForLv(G.level)-xpForLv(G.level-1);
+  document.getElementById('sb-xp-t').textContent=`${xpCur}/${xpNeed}`;
+  document.getElementById('sb-xp').style.width=Math.round(xpCur/Math.max(xpNeed,1)*100)+'%';
+  const sk=['mem','log','arg','comp','spd'],keys=['memory','logic','argumentation','compression','speed'];
+  sk.forEach((s,i)=>{document.getElementById(`ss-${s}`).style.width=G.skills[keys[i]]+'%';document.getElementById(`ss-${s}-v`).textContent=G.skills[keys[i]]});
+  // Quest badge
+  const open=QUESTS.filter(q=>!G.questsDone.includes(q.id)).length;
+  const qb=document.getElementById('sb-q-badge');if(qb){qb.textContent=open;qb.style.display=open>0?'':'none'}
+  const qd=document.getElementById('bn-q-dot');if(qd)qd.classList.toggle('show',open>0);
+  // Render dashboard if visible
+  if(document.getElementById('p-dashboard').classList.contains('on'))renderDash();
+}
+
+// ═══════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════
+function go(page){
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.sb-btn').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.bn-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('p-'+page).classList.add('on');
+  // Sidebar
+  const smap={dashboard:0,map:1,battle:2,training:3,quests:4,skills:5,achievements:6,coach:7};
+  const sbtns=document.querySelectorAll('.sb-btn');
+  if(sbtns[smap[page]])sbtns[smap[page]].classList.add('on');
+  // Bottom nav
+  const bnid='bn-'+page;
+  const bnel=document.getElementById(bnid);
+  if(bnel)bnel.classList.add('on');
+  // Render
+  if(page==='dashboard')renderDash();
+  if(page==='map')renderMap();
+  if(page==='battle'){renderEnemies();document.getElementById('b-select').style.display='block';document.getElementById('b-arena').style.display='none'}
+  if(page==='training'){renderGames();document.getElementById('t-list').style.display='block';document.getElementById('t-arena').style.display='none'}
+  if(page==='quests')renderQuests();
+  if(page==='skills')renderSkills();
+  if(page==='achievements')renderAchs();
+  window.scrollTo(0,0);
+}
+
+// ═══════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════
+function getTier(){
+  if(G.xp>=5000)return{name:'🧙 Архимаг',next:null};
+  if(G.xp>=2000)return{name:'⚔️ Дебатёр',next:5000};
+  if(G.xp>=500)return{name:'🔮 Мыслитель',next:2000};
+  return{name:'🌱 Новичок',next:500};
+}
+function renderDash(){
+  const tier=getTier();
+  const dw=document.getElementById('d-welcome');if(dw)dw.textContent=`Крепость ${G.name}`;
+  const dt=document.getElementById('d-tier');if(dt)dt.textContent=tier.name+(tier.next?` — до следующего: ${tier.next-G.xp} XP`:'');
+  // Stats
+  const ds=document.getElementById('d-stats');
+  if(ds)ds.innerHTML=[
+    {num:G.xp,lbl:'Всего XP',color:'var(--gold)'},
+    {num:G.totalTrainings,lbl:'Тренировок',color:'var(--blue)'},
+    {num:G.battlesWon,lbl:'Побед',color:'var(--emerald)'},
+    {num:G.streak+'д',lbl:'Серия',color:'var(--rose)'},
+    {num:G.level,lbl:'Уровень',color:'var(--purple)'},
+    {num:G.gold+'💰',lbl:'Золото',color:'var(--gold2)'},
+  ].map(s=>`<div class="stat-box"><div class="stat-num" style="color:${s.color}">${s.num}</div><div class="stat-lbl">${s.lbl}</div></div>`).join('');
+  // Skills
+  const dsk=document.getElementById('d-skills');
+  if(dsk){
+    const defs=[
+      {k:'memory',n:'Память',c:'var(--blue)',i:'🧩'},
+      {k:'logic',n:'Логика',c:'var(--emerald)',i:'🔬'},
+      {k:'argumentation',n:'Аргументация',c:'var(--purple)',i:'⚔️'},
+      {k:'compression',n:'Компрессия',c:'var(--gold)',i:'💡'},
+      {k:'speed',n:'Скорость',c:'var(--rose)',i:'⚡'},
+    ];
+    dsk.innerHTML=defs.map(d=>`<div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:3px">
+        <span style="font-size:12px">${d.i} ${d.n}</span>
+        <span style="font-family:monospace;font-size:12px;font-weight:700;color:${d.c}">${G.skills[d.k]}</span>
+      </div>
+      <div style="height:5px;background:rgba(255,255,255,.05);border-radius:100px;overflow:hidden">
+        <div style="height:100%;width:${G.skills[d.k]}%;background:${d.c};border-radius:100px;transition:width .5s"></div>
+      </div>
+    </div>`).join('');
+  }
+  renderDailyTasks();
+}
+function renderDailyTasks(){
+  const tasks=getDaily();
+  const el=document.getElementById('d-daily-tasks');if(!el)return;
+  el.innerHTML=tasks.map(t=>{
+    const done=(G.dailyDone[t.game]||0)>=t.count;
+    return `<div class="dtask ${done?'ok':''}">
+      <div class="dtask-chk">${done?'✓':''}</div>
+      <span class="dtask-name">${t.name}</span>
+      <span class="dtask-xp">${done?'✓':'+'+t.xp+' XP'}</span>
+      ${!done?`<button class="btn btn-xs btn-gold" onclick="startTraining('${t.game}');event.stopPropagation()" style="margin-left:4px;padding:4px 8px;font-size:10px">Играть</button>`:''}
+    </div>`;
+  }).join('');
+  if(tasks.every(t=>(G.dailyDone[t.game]||0)>=t.count)&&!G.dailyBonusGiven){
+    G.dailyBonusGiven=true;addXP(50,'Ежедневный бонус');notify('win','🎉 Все задания!','Бонус +50 XP! Ты молодец!',4000);save();
+  }
+}
+function getDaily(){
+  const today=new Date().toISOString().slice(0,10);
+  if(G.dailyDate!==today){G.dailyDate=today;G.dailyDone={};G.dailyBonusGiven=false;
+    G.dailyTasks=[
+      {game:'memory_match',name:'Тренировка памяти',count:1,xp:20},
+      {game:'word_chain',name:'Прокачка логики',count:1,xp:15},
+      {game:'anagram',name:'Скорость мысли',count:1,xp:15},
+      {game:'debate',name:'Дебаты',count:1,xp:30},
+    ];save();}
+  return G.dailyTasks||[];
+}
+function addLog(t){
+  if(!G.activityLog)G.activityLog=[];
+  G.activityLog.unshift({t,ts:Date.now()});
+  if(G.activityLog.length>20)G.activityLog.pop();
+  const el=document.getElementById('d-log');if(!el)return;
+  if(!G.activityLog.length){el.textContent='Начни тренировку!';return;}
+  el.innerHTML=G.activityLog.slice(0,8).map(a=>{
+    const d=new Date(a.ts),hm=`${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+    return `<div style="display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--border)"><span>${a.t}</span><span style="color:var(--text3);font-size:10px">${hm}</span></div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// MAP
+// ═══════════════════════════════════════
+function renderMap(){
+  const el=document.getElementById('map-container');if(!el)return;
+  updateMapPos();
+  // Group by region
+  const regions={};
+  MAP_NODES.forEach(n=>{if(!regions[n.region])regions[n.region]=[];regions[n.region].push(n);});
+  const heroNode=MAP_NODES[Math.max(0,G.mapPosition)];
+  let html=`<div style="text-align:center;margin-bottom:12px;font-size:12px;color:var(--text2)">
+    Позиция героя: <b style="color:var(--gold)">${heroNode.label}</b> · XP: <b style="color:var(--purple)">${G.xp}</b>
+  </div>`;
+  Object.entries(regions).forEach(([region,nodes],ri)=>{
+    html+=`<div class="map-region">
+      <div class="map-region-title">${region}</div>
+      <div class="map-nodes-row">`;
+    nodes.forEach((node,ni)=>{
+      const nodeIndex=MAP_NODES.indexOf(node);
+      const done=G.xp>=node.xpReq;
+      const isHere=nodeIndex===G.mapPosition;
+      const locked=!done;
+      const cls=done?'done':'locked';
+      const activeClass=isHere?' active':'';
+      html+=`<div class="map-node">
+        ${isHere?`<div class="hero-marker">${CLASSES[G.heroClass].ico}</div>`:''}
+        <div class="map-node-circle ${cls}${activeClass}" title="${node.label} (${node.xpReq} XP)">${node.ico}</div>
+        <div class="map-node-label" style="color:${done?'var(--text)':'var(--text3)'}">${node.label}</div>
+        <div style="font-size:9px;color:var(--text3)">${node.xpReq>0?node.xpReq+' XP':'Старт'}</div>
+      </div>`;
+    });
+    html+='</div>';
+    // Connector between regions
+    if(ri<Object.keys(regions).length-1){
+      const lastNode=nodes[nodes.length-1];const lastDone=G.xp>=lastNode.xpReq;
+      html+=`<div class="map-connector-v ${lastDone?'done':''}"></div>`;
+    }
+    html+='</div>';
+  });
+  html+=`<div class="map-legend">
+    <div class="ml-item"><div style="width:14px;height:14px;border-radius:50%;background:rgba(46,204,113,.2);border:1.5px solid var(--emerald)"></div> Пройдено</div>
+    <div class="ml-item"><div style="width:14px;height:14px;border-radius:50%;background:rgba(157,92,245,.2);border:1.5px solid var(--purple)"></div> Здесь</div>
+    <div class="ml-item"><div style="width:14px;height:14px;border-radius:50%;background:rgba(255,255,255,.03);border:1.5px solid var(--border);opacity:.4"></div> Заперто</div>
+  </div>`;
+  el.innerHTML=html;
+}
+
+// ═══════════════════════════════════════
+// ENEMIES
+// ═══════════════════════════════════════
+function renderEnemies(){
+  const el=document.getElementById('enemy-grid');if(!el)return;
+  el.innerHTML=ENEMIES.map(e=>{
+    const locked=G.level<e.req;
+    return `<div class="enemy-tile ${locked?'locked':''}" onclick="${locked?'':  `fightEnemy('${e.id}')`}">
+      <div class="enemy-req">Ур.${e.req}</div>
+      <span class="enemy-emoji">${e.emoji}</span>
+      <div class="enemy-name">${e.name}</div>
+      <div class="enemy-lv">Ур.${e.level} · ${e.tasks} задан. · ${e.time}с</div>
+      <div class="enemy-reward">${e.xp} XP · ${e.gold}💰</div>
+      ${locked?`<div style="font-size:9px;color:var(--text3);margin-top:4px">Нужен ур.${e.req}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// GAMES LIST
+// ═══════════════════════════════════════
+function renderGames(){
+  const el=document.getElementById('games-grid');if(!el)return;
+  el.innerHTML=GAMES.map(g=>{
+    const ul=G.unlockedGames.includes(g.key);
+    const dt=(G.dailyDone[g.key]||0)>0;
+    return `<div class="game-tile ${ul?'':'locked'} ${dt?'done-today':''}" onclick="${ul?`startTraining('${g.key}')`:''}" title="${ul?'':'Уровень '+g.req}">
+      <div class="game-tile-ico">${g.ico}</div>
+      <div class="game-tile-name">${g.name}</div>
+      <div class="game-tile-skill" style="color:${g.color}">${g.skillName}</div>
+      <div class="game-tile-xp">+${g.xp[0]}–${g.xp[1]} XP</div>
+      ${!ul?`<div class="game-tile-lock">🔒 Ур.${g.req}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// QUESTS
+// ═══════════════════════════════════════
+function renderQuests(){
+  const el=document.getElementById('quests-body');if(!el)return;
+  el.innerHTML=QUESTS.map(q=>{
+    const done=G.questsDone.includes(q.id);
+    return `<div style="padding:12px 14px;background:var(--surface);border:1px solid ${done?'rgba(46,204,113,.25)':'rgba(240,192,64,.15)'};border-radius:var(--r);margin-bottom:7px;display:flex;align-items:flex-start;gap:10px">
+      <span style="font-size:20px;flex-shrink:0;margin-top:1px">${q.ico}</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:700;margin-bottom:2px">${q.name}</div><div style="font-size:11px;color:var(--text2)">${q.desc}</div><div style="font-size:10px;color:var(--gold);margin-top:4px;font-weight:700">+${q.xp} XP · +${q.gold}💰</div></div>
+      <div style="font-size:12px;flex-shrink:0">${done?'<span style="color:var(--emerald);font-weight:700">✓</span>':'<span style="color:var(--text3)">...</span>'}</div>
+    </div>`;
+  }).join('');
+}
+function checkQuests(){
+  QUESTS.forEach(q=>{
+    if(G.questsDone.includes(q.id))return;
+    let ok=false;const r=q.req;
+    if(r.battlesWon&&G.battlesWon>=r.battlesWon)ok=true;
+    if(r.level&&G.level>=r.level)ok=true;
+    if(r.streak&&G.streak>=r.streak)ok=true;
+    if(r.enemy&&G.enemiesDefeated.includes(r.enemy))ok=true;
+    if(r.game&&(G.gamesPlayed[r.game]||0)>=r.count){ok=r.score?((G.highScores[r.game]||0)>=r.count):true}
+    if(r.skillTrain&&(G.skillTrainings[r.skillTrain]||0)>=r.count)ok=true;
+    if(r.allSkills&&['memory','logic','argumentation','compression','speed'].every(k=>G.skills[k]>=r.allSkills))ok=true;
+    if(ok){G.questsDone.push(q.id);addXP(q.xp,'Квест: '+q.name);G.gold+=q.gold;notify('win','📜 Квест выполнен!',`«${q.name}» +${q.xp} XP`,4000);save();}
+  });
+}
+
+// ═══════════════════════════════════════
+// SKILLS PANEL
+// ═══════════════════════════════════════
+function renderSkills(){
+  const el=document.getElementById('skills-body');if(!el)return;
+  const defs=[
+    {k:'memory',n:'Память',c:'var(--blue)',i:'🧩',desc:'Запоминание паттернов, рабочая память. Игры: Мнемо-матрица, Дворец памяти.'},
+    {k:'logic',n:'Логика',c:'var(--emerald)',i:'🔬',desc:'Последовательности, критическое мышление. Игры: Цепочка смыслов, Последовательность.'},
+    {k:'argumentation',n:'Аргументация',c:'var(--purple)',i:'⚔️',desc:'Полемика, риторика. Игры: Дебаты, Сократовский диалог.'},
+    {k:'compression',n:'Компрессия',c:'var(--gold)',i:'💡',desc:'Извлечение сути, абстракция. Игры: Компрессор идей, Суть истории.'},
+    {k:'speed',n:'Скорость',c:'var(--rose)',i:'⚡',desc:'Быстрое мышление. Игры: Анаграмма, Быстрые факты.'},
+  ];
+  el.innerHTML=defs.map(d=>{
+    const v=G.skills[d.k];const cls=v>=70?'maxed':v>=20?'unlocked':'';
+    return `<div class="skill-node ${cls}">
+      <div class="sn-ico">${d.i}</div>
+      <div class="sn-body">
+        <div class="sn-name">${d.n}</div>
+        <div class="sn-desc">${d.desc}</div>
+        <div class="sn-bar-wrap"><div class="sn-bar" style="width:${v}%;background:${d.c}"></div></div>
+      </div>
+      <div class="sn-val" style="color:${d.c}">${v}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════
+// ACHIEVEMENTS
+// ═══════════════════════════════════════
+function renderAchs(){
+  const el=document.getElementById('ach-grid');if(!el)return;
+  el.innerHTML=ACHS.map(a=>{
+    const e=G.achievementsDone.includes(a.id);
+    return `<div class="ach-card ${e?'earned':'locked'}">
+      <div class="ach-ico">${a.ico}</div>
+      <div class="ach-name">${a.name}</div>
+      <div class="ach-desc">${a.desc}</div>
+      <div class="ach-xp">${e?'+'+a.xp+' XP ✓':'🔒'}</div>
+    </div>`;
+  }).join('');
+}
+function checkAchs(){
+  const add=(id)=>{
+    if(!G.achievementsDone.includes(id)){
+      G.achievementsDone.push(id);
+      const a=ACHS.find(x=>x.id===id);
+      if(a){notify('skill','🏅 Достижение!',a.name+' — '+a.desc,3500);addXP(a.xp,'Достижение');}save();
+    }
+  };
+  if(G.level>=1)add('first_step');
+  if(G.battlesWon>=1)add('first_battle');
+  if(G.xp>=100)add('xp100');
+  if(G.xp>=500)add('xp500');
+  if(G.xp>=2000)add('xp2000');
+  if(G.level>=5)add('level5');
+  if(G.level>=10)add('level10');
+  if(G.streak>=7)add('streak7');
+  if(G.skills.memory>=50)add('mem50');
+  if(G.skills.logic>=50)add('log50');
+  if(G.skills.argumentation>=50)add('arg50');
+  if(['memory','logic','argumentation','compression','speed'].every(k=>G.skills[k]>=30))add('all30');
+  if(G.enemiesDefeated.includes('dragon'))add('dragon');
+  if(perfCount>=5)add('perf5');
+}
+
+// ═══════════════════════════════════════
+// TIMERS
+// ═══════════════════════════════════════
+const TM={};
+function startTimer(id,sec,tick,end){clearInterval(TM[id]);let r=sec;tick(r);TM[id]=setInterval(()=>{r--;tick(r);if(r<=0){clearInterval(TM[id]);end();}},1000);}
+function fmtT(s){return`${Math.floor(s/60)}:${(s%60).toString().padStart(2,'0')}`}
+
+// ═══════════════════════════════════════
+// BATTLE SYSTEM — FIXED WIN CONDITION
+// ═══════════════════════════════════════
+let BS=null;
+
+function fightEnemy(id){
+  const enemy=ENEMIES.find(e=>e.id===id);if(!enemy||G.level<enemy.req)return;
+  BS={enemy,heroHp:G.hp,monsterHp:enemy.hp,done:0,total:enemy.tasks,totalScore:0,phase:'fight',start:Date.now()};
+  document.getElementById('b-select').style.display='none';
+  document.getElementById('b-arena').style.display='block';
+  document.getElementById('sb-battle-badge').style.display='';
+  document.getElementById('bn-battle-dot')?.classList.add('show');
+  nextBattleTask();
+}
+
+function nextBattleTask(){
+  const bs=BS;const e=bs.enemy;
+  const skillKey=e.skills[bs.done%e.skills.length];
+  const game=GAMES.find(g=>g.skill===skillKey&&G.unlockedGames.includes(g.key))||GAMES[0];
+  bs.curGame=game;bs.curSkill=skillKey;
+  const hpPct=Math.round(bs.heroHp/G.maxHp*100);
+  const mhpPct=Math.round(bs.monsterHp/e.hp*100);
+  document.getElementById('b-arena').innerHTML=`
+    <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-xs" onclick="exitBattle()">← Отступить</button>
+      <span class="badge badge-gold">Задание ${bs.done+1}/${bs.total}</span>
+      <span class="badge badge-purple">${game.ico} ${game.name}</span>
+    </div>
+    <div class="battle-hud">
+      <div class="battle-hud-inner">
+        <div class="combatant">
+          <div class="cb-name hero">${CLASSES[G.heroClass].ico} ${G.name}</div>
+          <div style="font-size:10px;color:var(--text3)">HP ${bs.heroHp}/${G.maxHp}</div>
+          <div class="cb-hp"><div class="cb-hp-fill hero-fill" id="b-hero-hp" style="width:${hpPct}%"></div></div>
+        </div>
+        <div class="battle-vs">VS</div>
+        <div class="battle-timer">
+          <span class="bt-num" id="b-timer">0:${e.time.toString().padStart(2,'0')}</span>
+          <div class="bt-lbl">Время</div>
+        </div>
+        <div class="battle-vs"></div>
+        <div class="combatant" style="text-align:right">
+          <div class="cb-name enemy">${e.name} ${e.emoji}</div>
+          <div style="font-size:10px;color:var(--text3)">HP ${bs.monsterHp}/${e.hp}</div>
+          <div class="cb-hp"><div class="cb-hp-fill enemy-fill" id="b-enemy-hp" style="width:${mhpPct}%"></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="battle-task-card">
+      <div class="btc-header">
+        <span style="font-size:12px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700">⚡ Нанеси урон!</span>
+      </div>
+      <div class="btc-body">
+        ${getBattleTaskHTML(game,e)}
+        <div id="b-inline-result" style="display:none;margin-top:10px"></div>
+      </div>
+    </div>`;
+  startTimer('battle',e.time,s=>{
+    const el=document.getElementById('b-timer');if(el){el.textContent=fmtT(s);el.style.color=s<=10?'var(--rose)':s<=20?'var(--amber)':'var(--gold)';}
+  },()=>resolveBattleTask(0,true));
+}
+
+// Battle task HTML generators
+const MEM_SEQS=[['🌟','🔥','⚡','🎯','🧠'],['🐉','🔮','⚔️','🛡️','🏹'],['💎','🌙','☀️','🌊','🌋']];
+let bSeq=[],bSeqAns=[];
+function getBattleTaskHTML(game,enemy){
+  const sk=game.skill;
+  if(sk==='memory')return getBtMemHTML();
+  if(sk==='speed')return getBtAnaHTML();
+  if(sk==='logic')return getBtLogicHTML();
+  if(sk==='argumentation')return getBtDebateHTML();
+  if(sk==='compression')return getBtCompHTML();
+  return getBtMemHTML();
+}
+function getBtMemHTML(){
+  const len=3+Math.min(2,Math.floor(G.level/3));
+  bSeq=MEM_SEQS[Math.floor(Math.random()*3)].slice(0,len);bSeqAns=[];
+  return `<div class="battle-q">Запомни последовательность:</div>
+    <div id="bt-seq-show" style="display:flex;gap:6px;font-size:26px;padding:12px;background:var(--surface2);border-radius:var(--r-sm);margin-bottom:12px">${bSeq.map(e=>`<span>${e}</span>`).join('')}</div>
+    <div id="bt-seq-inp" style="display:none">
+      <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Воспроизведи порядок:</div>
+      <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">${[...new Set([...MEM_SEQS[0],...MEM_SEQS[1],...MEM_SEQS[2]])].map(e=>`<button class="btn btn-ghost btn-sm" onclick="bSeqAns.push('${e}');document.getElementById('bt-seq-ans').innerHTML=bSeqAns.join('')" style="font-size:16px;padding:7px 9px">${e}</button>`).join('')}</div>
+      <div id="bt-seq-ans" style="min-height:36px;background:var(--surface2);border-radius:var(--r-xs);padding:8px;font-size:20px;margin-bottom:8px"></div>
+      <div class="gap8">
+        <button class="btn btn-gold btn-sm" onclick="checkBtSeq()">Проверить</button>
+        <button class="btn btn-ghost btn-sm" onclick="bSeqAns=[];document.getElementById('bt-seq-ans').innerHTML=''">Сбросить</button>
+      </div>
+    </div>
+    <button class="btn btn-purple btn-sm" id="bt-seq-ready" onclick="document.getElementById('bt-seq-show').style.display='none';document.getElementById('bt-seq-inp').style.display='block';this.style.display='none'">Запомнил! ✓</button>`;
+}
+function checkBtSeq(){resolveBattleTask(bSeqAns.join('')===bSeq.join('')?100:Math.round(bSeqAns.filter((e,i)=>e===bSeq[i]).length/bSeq.length*60));}
+
+const ANA_BTL=['РАЗУМ','ПАМЯТЬ','ЛОГИКА','МОЗГ','МЫСЛЬ','ЗНАНИЕ','СЛОВО','ИДЕЯ'];
+let bAnaWord='';
+function getBtAnaHTML(){
+  bAnaWord=ANA_BTL[Math.floor(Math.random()*ANA_BTL.length)];
+  let sc=bAnaWord.split('').sort(()=>Math.random()-.5).join('');
+  while(sc===bAnaWord)sc=bAnaWord.split('').sort(()=>Math.random()-.5).join('');
+  return `<div class="battle-q" style="font-family:monospace;font-size:28px;letter-spacing:.2em;color:var(--gold);text-align:center">${sc}</div>
+    <div style="display:flex;gap:7px;margin-top:8px">
+      <input class="ta" id="bt-ana-inp" placeholder="Слово..." style="min-height:auto;padding:9px 11px;flex:1;text-transform:uppercase;letter-spacing:.1em" onkeydown="if(event.key==='Enter')checkBtAna()">
+      <button class="btn btn-gold" onclick="checkBtAna()">✓</button>
+    </div>`;
+}
+function checkBtAna(){resolveBattleTask((document.getElementById('bt-ana-inp')?.value||'').trim().toUpperCase()===bAnaWord?100:0);}
+
+const LOGIC_BTL=[{q:'2,4,8,16,?',a:'32'},{q:'1,1,2,3,5,8,?',a:'13'},{q:'100,81,64,49,?',a:'36'},{q:'3,6,12,24,?',a:'48'},{q:'1,4,9,16,25,?',a:'36'}];
+let bLogQ=null;
+function getBtLogicHTML(){
+  bLogQ=LOGIC_BTL[Math.floor(Math.random()*LOGIC_BTL.length)];
+  return `<div class="battle-q">Следующий элемент: <b style="color:var(--gold)">${bLogQ.q}</b></div>
+    <div style="display:flex;gap:7px">
+      <input class="ta" id="bt-log-inp" placeholder="Ответ..." style="min-height:auto;padding:9px 11px;flex:1;font-size:18px;text-align:center" onkeydown="if(event.key==='Enter')checkBtLogic()">
+      <button class="btn btn-gold" onclick="checkBtLogic()">✓</button>
+    </div>`;
+}
+function checkBtLogic(){resolveBattleTask((document.getElementById('bt-log-inp')?.value||'').trim()===bLogQ.a?100:0);}
+
+const DBT_Q=['Технологии делают нас умнее или глупее?','Стоит ли ограничивать соцсети?','Важнее опыт или образование?','ИИ — угроза или прогресс?'];
+let bDbtQ='';
+function getBtDebateHTML(){
+  bDbtQ=DBT_Q[Math.floor(Math.random()*DBT_Q.length)];
+  return `<div class="battle-q">«${bDbtQ}»<br><small style="font-size:11px;color:var(--text3)">Дай 2-3 аргумента</small></div>
+    <textarea class="ta" id="bt-dbt-inp" placeholder="Твои аргументы..." style="min-height:70px"></textarea>
+    <button class="btn btn-gold btn-sm" style="margin-top:8px" onclick="checkBtDebate()">Атаковать ↗</button>`;
+}
+async function checkBtDebate(){
+  const v=(document.getElementById('bt-dbt-inp')?.value||'').trim();if(!v)return;
+  clearInterval(TM.battle);
+  document.querySelector('#b-arena .btn-gold')?.setAttribute('disabled','true');
+  try{const r=await claudeAPI(`Оцени аргументы: "${v}" по вопросу "${bDbtQ}". JSON: {"score":NN}. score 0-100.`);
+    resolveBattleTask(JSON.parse(r.replace(/```json|```/g,'')).score||50);
+  }catch(e){resolveBattleTask(50);}
+}
+
+const COMP_BTL=[
+  {t:'Прокрастинация',tx:'Откладывание задач часто вызвано страхом провала, а не ленью.'},
+  {t:'Эффект якоря',tx:'Первая увиденная цифра непропорционально влияет на все последующие суждения.'},
+  {t:'Нейропластичность',tx:'Мозг меняет структуру в ответ на опыт обучения — связи крепнут при повторении.'},
+];
+let bCompT=null;
+function getBtCompHTML(){
+  bCompT=COMP_BTL[Math.floor(Math.random()*COMP_BTL.length)];
+  return `<div class="battle-q">${bCompT.tx}<br><small style="font-size:11px;color:var(--text3)">Сожми в одно предложение (до 80 симв.)</small></div>
+    <textarea class="ta" id="bt-comp-inp" placeholder="Суть..." maxlength="120" style="min-height:55px"></textarea>
+    <button class="btn btn-gold btn-sm" style="margin-top:8px" onclick="checkBtComp()">↗</button>`;
+}
+async function checkBtComp(){
+  const v=(document.getElementById('bt-comp-inp')?.value||'').trim();if(!v)return;
+  clearInterval(TM.battle);
+  try{const r=await claudeAPI(`Оцени компрессию "${bCompT.tx}" в "${v}". JSON: {"score":NN}.`);
+    resolveBattleTask(JSON.parse(r.replace(/```json|```/g,'')).score||50);
+  }catch(e){resolveBattleTask(50);}
+}
+
+async function resolveBattleTask(score,timeout=false){
+  clearInterval(TM.battle);
+  const bs=BS;if(!bs||bs.phase!=='fight')return;
+  // Damage calc: score >= 50 damages monster proportionally
+  const dmgM=timeout?0:Math.round((score/100)*((bs.enemy.hp/bs.total)*1.5+0.5));
+  const dmgH=timeout?2:(score<40?1:0);
+  bs.monsterHp=Math.max(0,bs.monsterHp-dmgM);
+  bs.heroHp=Math.max(0,bs.heroHp-dmgH);
+  bs.totalScore+=score;bs.done++;
+  const skg=Math.round(score/25);
+  if(bs.curSkill)addSkill(bs.curSkill,skg);
+  G.hp=bs.heroHp;
+  if(score>=80)perfCount++;
+  // Show inline result
+  const praise=getPraise(timeout?0:score);
+  const ri=document.getElementById('b-inline-result');
+  if(ri){
+    ri.style.display='block';
+    ri.innerHTML=`<div style="padding:12px;background:var(--surface2);border-radius:var(--r-sm);border-left:2px solid ${score>=70?'var(--emerald)':score>=40?'var(--gold)':'var(--rose)'}">
+      <div style="font-family:var(--display);font-size:14px;color:var(--gold);margin-bottom:3px">${praise}</div>
+      <div style="font-size:11px;color:var(--text3)">Результат: ${score}/100 · Урон монстру: ${dmgM} · ${timeout?'⏱️ Время!':''}${skg>0?` · ${bs.curSkill} +${skg}`:''}</div>
+    </div>`;
+    // Update HP bars
+    const hh=document.getElementById('b-hero-hp'),mh=document.getElementById('b-enemy-hp');
+    if(hh)hh.style.width=Math.round(bs.heroHp/G.maxHp*100)+'%';
+    if(mh)mh.style.width=Math.round(bs.monsterHp/bs.enemy.hp*100)+'%';
+  }
+  G.totalTrainings++;
+  trackGame(bs.curGame?.key||'battle',score);
+  // Decide end
+  const avgScore=Math.round(bs.totalScore/bs.done);
+  const monsterDead=bs.monsterHp<=0;
+  const allTasksDone=bs.done>=bs.total;
+  // WIN if: monster dead OR all tasks done with avg >= 50
+  if(monsterDead||bs.heroHp<=0||(allTasksDone&&avgScore>=50)){
+    await pause(1600);endBattle(monsterDead||(allTasksDone&&avgScore>=50));
+  } else if(allTasksDone){
+    // avg < 50 but tasks done - defeat
+    await pause(1600);endBattle(false);
+  } else {
+    await pause(1600);bs.phase='fight';nextBattleTask();
+  }
+  updateSidebar();save();
+}
+const pause=(ms)=>new Promise(r=>setTimeout(r,ms));
+
+function endBattle(won){
+  clearInterval(TM.battle);
+  const bs=BS;const e=bs.enemy;
+  const avg=bs.done>0?Math.round(bs.totalScore/bs.done):0;
+  let xpEarned=0,goldEarned=0;
+  if(won){
+    G.battlesWon++;G.totalBattles++;
+    xpEarned=Math.round(e.xp*(0.5+avg/200));
+    goldEarned=Math.round(e.gold*(0.5+avg/200));
+    G.gold+=goldEarned;xpEarned=addXP(xpEarned,`Победа: ${e.name}`);
+    if(!G.enemiesDefeated.includes(e.id))G.enemiesDefeated.push(e.id);
+  }else{
+    G.totalBattles++;xpEarned=addXP(Math.round(e.xp*.12),`Бой: ${e.name}`);G.hp=Math.max(10,G.hp);
+  }
+  checkAchs();save();
+  const box=document.getElementById('outcome-box');
+  const praise=getPraise(won?avg:0);
+  box.innerHTML=`
+    <span class="oc-emoji">${won?'🏆':'💀'}</span>
+    <div class="oc-title ${won?'win':'lose'}">${won?'Победа!':'Поражение!'}</div>
+    <div style="font-family:var(--display);font-size:13px;color:${won?'var(--gold)':'var(--text2)'};margin-bottom:10px">${praise}</div>
+    <div class="oc-rows">
+      <div class="oc-row"><span>📊 Средний балл</span><span style="color:${avg>=70?'var(--emerald)':'var(--gold)'};font-weight:700">${avg}/100</span></div>
+      <div class="oc-row"><span>⚡ XP получено</span><span style="color:var(--gold);font-weight:700">+${xpEarned}</span></div>
+      ${won?`<div class="oc-row"><span>💰 Золото</span><span style="color:var(--gold2);font-weight:700">+${goldEarned}</span></div>`:''}
+      <div class="oc-row"><span>📈 Уровень</span><span style="color:var(--purple)">${G.level}</span></div>
+    </div>
+    <div class="gap8" style="justify-content:center;margin-top:4px">
+      <button class="btn btn-gold btn-sm" onclick="closeOutcome();go('battle')">Снова в бой</button>
+      <button class="btn btn-ghost btn-sm" onclick="closeOutcome();go('dashboard')">В крепость</button>
+    </div>`;
+  document.getElementById('outcome').style.display='flex';
+  BS=null;
+  document.getElementById('sb-battle-badge').style.display='none';
+  document.getElementById('bn-battle-dot')?.classList.remove('show');
+}
+function exitBattle(){clearInterval(TM.battle);addXP(5,'Отступление');BS=null;document.getElementById('b-select').style.display='block';document.getElementById('b-arena').style.display='none';}
+function closeOutcome(){document.getElementById('outcome').style.display='none';}
+
+// Track game played
+function trackGame(key,score){
+  G.gamesPlayed[key]=(G.gamesPlayed[key]||0)+1;
+  if(score>=70)G.highScores[key]=(G.highScores[key]||0)+1;
+  G.dailyDone[key]=(G.dailyDone[key]||0)+1;
+  const game=GAMES.find(g=>g.key===key);
+  if(game)G.skillTrainings[game.skill]=(G.skillTrainings[game.skill]||0)+1;
+  checkQuests();save();
+}
+
+// ═══════════════════════════════════════
+// TRAINING GAMES
+// ═══════════════════════════════════════
+function startTraining(key){
+  go('training');
+  document.getElementById('t-list').style.display='none';
+  const arena=document.getElementById('t-arena');arena.style.display='block';arena.innerHTML='';
+  const game=GAMES.find(g=>g.key===key);if(!game)return;
+  arena.innerHTML=`<div style="max-width:640px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn btn-ghost btn-xs" onclick="document.getElementById('t-list').style.display='block';document.getElementById('t-arena').style.display='none';clearInterval(TM.train)">← Назад</button>
+      <span style="font-size:18px">${game.ico}</span>
+      <div><div style="font-size:14px;font-weight:700">${game.name}</div><div style="font-size:10px;color:var(--text3)">${game.skillName} · +${game.xp[0]}–${game.xp[1]} XP</div></div>
+    </div>
+    <div id="g-body"></div>
+  </div>`;
+  if(key==='memory_match')initMemMatch();
+  else if(key==='word_chain')initWordChain();
+  else if(key==='anagram')initAnagram();
+  else if(key==='compression'||key==='story_compress')initComp(key);
+  else if(key==='debate'||key==='socratic')initDebate(key);
+  else if(key==='sequence')initSeq();
+  else if(key==='fast_facts')initFastFacts();
+  else if(key==='memory_palace')initPalace();
+  else document.getElementById('g-body').innerHTML='<div style="padding:20px;color:var(--text2)">Скоро!</div>';
+}
+
+// ─── MEMORY MATCH ───
+const MEMS=['🌟','🔥','⚡','🎯','🧠','💎','🚀','🌈','🐉','🔮','⚔️','🏹'];
+let MS={};
+function initMemMatch(){
+  const pc=Math.min(6+Math.floor(G.level/2),8);
+  const cards=[...MEMS.slice(0,pc),...MEMS.slice(0,pc)].sort(()=>Math.random()-.5).map((e,i)=>({id:i,e,f:false,m:false}));
+  MS={cards,fl:[],matched:0,moves:0,ph:'show',st:null};
+  const cols=Math.ceil(Math.sqrt(cards.length*1.3));
+  document.getElementById('g-body').innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+    <div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
+      <span style="font-size:12px;color:var(--text2)" id="mm-st">Запомни расположение!</span>
+      <span id="mm-t" style="font-family:monospace;font-size:13px;color:var(--gold);background:var(--gold-glow);padding:3px 8px;border-radius:5px">2:00</span>
+      <span id="mm-p" style="font-size:11px;color:var(--text2)">0/${pc}</span>
+    </div>
+    <div style="padding:14px">
+      <div id="mm-grid" style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:6px;margin-bottom:12px"></div>
+      <div id="mm-res" style="display:none"></div>
+    </div>
+  </div>`;
+  renderMM(true);
+  setTimeout(()=>{renderMM(false);document.getElementById('mm-st').textContent='Найди все пары!';MS.ph='play';MS.st=Date.now();startTimer('train',120,s=>{const e=document.getElementById('mm-t');if(e)e.textContent=fmtT(s)},()=>endMM(false))},2500);
+}
+function renderMM(sa){
+  const g=document.getElementById('mm-grid');if(!g)return;
+  g.innerHTML=MS.cards.map((c,i)=>`<div onclick="flipMM(${i})" style="height:58px;background:${c.m?'rgba(46,204,113,.1)':sa||c.f?'var(--surface3)':'var(--surface2)'};border:1px solid ${c.m?'var(--emerald)':c.f?'var(--purple)':'var(--border)'};border-radius:var(--r-xs);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;transition:all .2s;user-select:none">${(sa||c.f||c.m)?c.e:''}</div>`).join('');
+}
+async function flipMM(i){
+  if(MS.ph!=='play')return;const c=MS.cards[i];if(c.f||c.m||MS.fl.length>=2)return;
+  c.f=true;MS.fl.push(i);renderMM(false);
+  if(MS.fl.length===2){MS.moves++;const[a,b]=MS.fl.map(x=>MS.cards[x]);
+    await pause(550);
+    if(a.e===b.e){a.m=b.m=true;MS.matched++;document.getElementById('mm-p').textContent=`${MS.matched}/${MS.cards.length/2}`;if(MS.matched===MS.cards.length/2){clearInterval(TM.train);endMM(true);}}
+    else{a.f=b.f=false;}MS.fl=[];renderMM(false);}
+}
+function endMM(won){
+  clearInterval(TM.train);MS.ph='done';
+  const el=Math.round((Date.now()-MS.st)/1000);
+  const xp=won?Math.max(20,60-MS.moves*3-Math.floor(el/15)*3):8;
+  const sc=won?Math.max(30,100-MS.moves*5):20;
+  addSkill('memory',won?4:1);showResult('mm-res',sc,xp,getPraise(sc),'🧩 Память',won,'memory_match');
+  if(won)addXP(xp,'Мнемо-матрица');trackGame('memory_match',sc);
+}
+
+// ─── WORD CHAIN ───
+const CHAIN_S=['Мозг','Время','Знание','Творчество','Память','Сила','Будущее','Наука','Свет','Разум'];
+let CW=[],CA=true;
+function initWordChain(){
+  CW=[CHAIN_S[Math.floor(Math.random()*CHAIN_S.length)]];CA=true;
+  document.getElementById('g-body').innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+    <div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
+      <span style="font-size:12px">Длина: <b id="cw-len">1</b></span>
+      <span id="cw-t" style="font-family:monospace;font-size:13px;color:var(--gold);background:var(--gold-glow);padding:3px 8px;border-radius:5px">1:30</span>
+    </div>
+    <div style="padding:14px">
+      <div id="cw-disp" style="display:flex;flex-wrap:wrap;gap:6px;min-height:38px;margin-bottom:12px;align-items:center"></div>
+      <div style="display:flex;gap:7px">
+        <input class="ta" id="cw-inp" placeholder="Следующее понятие..." style="min-height:auto;padding:9px 11px;flex:1" onkeydown="if(event.key==='Enter')submitChain()">
+        <button class="btn btn-gold" onclick="submitChain()">↗</button>
+      </div>
+      <div id="cw-fb" style="font-size:11px;margin-top:6px;min-height:16px"></div>
+      <div id="cw-res" style="display:none;margin-top:10px"></div>
+    </div>
+  </div>`;
+  renderChain();
+  startTimer('train',90,s=>{const e=document.getElementById('cw-t');if(e)e.textContent=fmtT(s)},()=>endChain());
+}
+function renderChain(){
+  const el=document.getElementById('cw-disp');if(!el)return;
+  el.innerHTML=CW.map((w,i)=>`${i>0?'<span style="color:var(--text3)">→</span>':''}<span style="padding:4px 9px;background:${i===CW.length-1?'rgba(157,92,245,.2)':'var(--surface2)'};border:1px solid ${i===CW.length-1?'var(--purple)':'var(--border)'};border-radius:5px;font-size:12px">${w}</span>`).join('');
+  const ln=document.getElementById('cw-len');if(ln)ln.textContent=CW.length;
+}
+async function submitChain(){
+  if(!CA)return;const w=(document.getElementById('cw-inp')?.value||'').trim();if(!w)return;
+  document.getElementById('cw-inp').value='';
+  const prev=CW[CW.length-1];
+  try{const r=await claudeAPI(`Есть ли смысловая связь между "${prev}" и "${w}"? JSON: {"v":true/false,"r":"1 предложение"}`);
+    const j=JSON.parse(r.replace(/```json|```/g,''));
+    const fb=document.getElementById('cw-fb');
+    if(j.v){CW.push(w);renderChain();if(fb)fb.innerHTML=`<span style="color:var(--emerald)">✓ ${j.r}</span>`;}
+    else{if(fb)fb.innerHTML=`<span style="color:var(--rose)">✗ ${j.r}</span>`;}
+  }catch(e){CW.push(w);renderChain();}
+}
+function endChain(){clearInterval(TM.train);CA=false;const s=Math.min(100,CW.length*12);const xp=Math.min(45,CW.length*4);addSkill('logic',Math.round(xp/6));showResult('cw-res',s,xp,getPraise(s),'🔗 Логика',CW.length>5,'word_chain');if(xp>0)addXP(xp,'Цепочка смыслов');trackGame('word_chain',s);}
+
+// ─── ANAGRAM ───
+const ANA_SETS=[
+  {t:'Когниция',w:['ПАМЯТЬ','МОЗГ','РАЗУМ','ЛОГИКА','МЫСЛЬ']},
+  {t:'Философия',w:['ИСТИНА','БЫТИЕ','ИДЕЯ','СМЫСЛ','ФОРМА']},
+  {t:'Сила',w:['ВОЛЯ','ЗНАНИЕ','МУДРОСТЬ','ОПЫТ','ЦЕЛЬ']},
+];
+let AS2={};
+function scramble(w){let s=w.split('').sort(()=>Math.random()-.5).join('');while(s===w&&w.length>1)s=w.split('').sort(()=>Math.random()-.5).join('');return s;}
+function initAnagram(){
+  const set=ANA_SETS[Math.floor(Math.random()*ANA_SETS.length)];
+  AS2={set,i:0,c:0,active:true};
+  document.getElementById('g-body').innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+    <div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
+      <b id="an-topic">${set.t}</b>
+      <span id="an-t" style="font-family:monospace;font-size:13px;color:var(--gold);background:var(--gold-glow);padding:3px 8px;border-radius:5px">1:00</span>
+      <span id="an-sc" style="font-size:11px;color:var(--text2)">0/${set.w.length}</span>
+    </div>
+    <div style="padding:16px">
+      <div id="an-w" style="font-family:monospace;font-size:30px;font-weight:700;text-align:center;letter-spacing:.2em;color:var(--gold);padding:18px;background:var(--surface2);border-radius:var(--r-sm);margin-bottom:14px">????</div>
+      <div style="display:flex;gap:7px">
+        <input class="ta" id="an-inp" placeholder="Слово..." style="min-height:auto;padding:9px 11px;flex:1;text-transform:uppercase;letter-spacing:.1em" onkeydown="if(event.key==='Enter')checkAna()">
+        <button class="btn btn-gold" onclick="checkAna()">✓</button>
+        <button class="btn btn-ghost" onclick="AS2.i++;showAnaW()">→</button>
+      </div>
+      <div id="an-fb" style="font-size:12px;margin-top:7px;min-height:16px"></div>
+      <div id="an-res" style="display:none;margin-top:10px"></div>
+    </div>
+  </div>`;
+  showAnaW();
+  startTimer('train',60,s=>{const e=document.getElementById('an-t');if(e)e.textContent=fmtT(s)},()=>endAna());
+}
+function showAnaW(){if(AS2.i>=AS2.set.w.length){clearInterval(TM.train);endAna();return;}const w=document.getElementById('an-w');if(w)w.textContent=scramble(AS2.set.w[AS2.i]);const i=document.getElementById('an-inp');if(i){i.value='';i.focus();}}
+function checkAna(){const v=(document.getElementById('an-inp')?.value||'').trim().toUpperCase();const ok=v===AS2.set.w[AS2.i];const fb=document.getElementById('an-fb');if(ok){AS2.c++;AS2.i++;document.getElementById('an-sc').textContent=`${AS2.c}/${AS2.set.w.length}`;if(fb)fb.innerHTML='<span style="color:var(--emerald)">✓ Верно!</span>';setTimeout(showAnaW,500);if(AS2.i>=AS2.set.w.length){clearInterval(TM.train);endAna();}}else{if(fb)fb.innerHTML='<span style="color:var(--rose)">✗ Попробуй ещё</span>';}}
+function endAna(){clearInterval(TM.train);AS2.active=false;const sc=Math.round(AS2.c/AS2.set.w.length*100);const xp=AS2.c*10;addSkill('speed',AS2.c);showResult('an-res',sc,xp,getPraise(sc),'⚡ Скорость',sc>=60,'anagram');if(xp>0)addXP(xp,'Анаграмма');trackGame('anagram',sc);}
+
+// ─── COMPRESSION (huge bank) ───
+let CS2={};
+function initComp(key){
+  // Pick random from bank, difficulty weighted by level
+  const maxDiff=Math.min(3,1+Math.floor(G.level/3));
+  const pool=COMP_BANK.filter(c=>c.diff<=maxDiff);
+  const txt=pool[Math.floor(Math.random()*pool.length)];
+  CS2={txt,key,done:false};
+  document.getElementById('g-body').innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+    <div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
+      <b style="font-size:13px">${txt.topic}</b>
+      <span id="cp-t" style="font-family:monospace;font-size:13px;color:var(--gold);background:var(--gold-glow);padding:3px 8px;border-radius:5px">2:00</span>
+    </div>
+    <div style="padding:14px">
+      <div style="font-size:13px;line-height:1.7;color:var(--text2);padding:12px;background:var(--surface2);border-radius:var(--r-sm);margin-bottom:12px;border-left:2px solid var(--purple)">${txt.text}</div>
+      <div style="font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:5px">Твоя компрессия (1 предложение / до 150 симв.):</div>
+      <textarea class="ta" id="cp-inp" placeholder="Суть в одном предложении..." maxlength="200" style="min-height:65px" oninput="document.getElementById('cp-ch').textContent=this.value.length+'/150'"></textarea>
+      <div style="display:flex;justify-content:space-between;margin-top:5px;align-items:center">
+        <span id="cp-ch" style="font-size:10px;color:var(--text3)">0/150</span>
+        <button class="btn btn-gold btn-sm" id="cp-btn" onclick="submitComp('${key}')">Оценить AI ↗</button>
+      </div>
+      <div id="cp-res" style="display:none;margin-top:10px"></div>
+    </div>
+  </div>`;
+  startTimer('train',120,s=>{const e=document.getElementById('cp-t');if(e)e.textContent=fmtT(s)},()=>{});
+}
+async function submitComp(key){
+  if(CS2.done)return;const v=(document.getElementById('cp-inp')?.value||'').trim();if(!v)return;
+  clearInterval(TM.train);CS2.done=true;
+  document.getElementById('cp-btn').disabled=true;document.getElementById('cp-btn').textContent='AI оценивает...';
+  const prompt=`Ты — строгий преподаватель. Оцени компрессию текста.
+Оригинал: "${CS2.txt.text}"
+Компрессия: "${v}"
+Критерии: точность идеи (40%), краткость (30%), ясность (30%).
+Ответь СТРОГО JSON: {"score":NN,"feedback":"2 предложения честной оценки на русском"}
+score 0-100.`;
+  try{
+    const r=await claudeAPI(prompt);
+    const j=JSON.parse(r.replace(/```json|```/g,'').trim());
+    const xp=Math.round(j.score*.85);
+    addSkill('compression',Math.round(xp/8));
+    document.getElementById('cp-res').style.display='block';
+    document.getElementById('cp-res').innerHTML=`<div class="result-box">
+      <div class="res-praise">${getPraise(j.score)}</div>
+      <div class="res-score" style="color:${j.score>=70?'var(--emerald)':j.score>=40?'var(--gold)':'var(--rose)'}">${j.score}</div>
+      <div class="res-label">из 100 баллов</div>
+      <div class="res-xp">+${xp} XP</div>
+      <div class="res-text">${j.feedback}</div>
+      <div class="gap8" style="justify-content:center;margin-top:10px">
+        <button class="btn btn-gold btn-sm" onclick="initComp('${key}')">Ещё текст</button>
+        <button class="btn btn-ghost btn-sm" onclick="go('training')">К играм</button>
+      </div>
+    </div>`;
+    addXP(xp,'Компрессор идей');trackGame(key,j.score);
+  }catch(e){
+    const xp=30;addSkill('compression',2);
+    document.getElementById('cp-res').style.display='block';
+    document.getElementById('cp-res').innerHTML=`<div class="result-box"><div class="res-praise">Хорошая попытка!</div><div class="res-xp">+${xp} XP</div><button class="btn btn-gold btn-sm" onclick="initComp('${key}')" style="margin-top:10px">Ещё</button></div>`;
+    addXP(xp,'Компрессор идей');trackGame(key,50);
+  }
+  G.totalTrainings++;updateSidebar();
+}
+
+// ─── DEBATE ───
+const DEB_Q=['Соцсети делают нас глупее?','ИИ опаснее, чем полезнее?','Успех важнее счастья?','Технологии разрушают общение?','Образование устарело?'];
+let DS={};
+function initDebate(key){
+  DS={q:DEB_Q[Math.floor(Math.random()*DEB_Q.length)],side:Math.random()>.5?'ЗА':'ПРОТИВ',round:1,total:0,done:false,key};
+  document.getElementById('g-body').innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 14px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:6px">
+      <div><span style="font-size:11px;color:var(--text3)">Тезис: </span><b style="font-size:12px">${DS.q}</b></div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span id="db-t" style="font-family:monospace;font-size:13px;color:var(--gold);background:var(--gold-glow);padding:3px 8px;border-radius:5px">3:00</span>
+        <span style="font-size:10px;padding:3px 8px;background:${DS.side==='ЗА'?'rgba(46,204,113,.15)':'rgba(231,76,60,.15)'};color:${DS.side==='ЗА'?'var(--emerald)':'var(--rose)'};border-radius:100px;font-weight:700">${DS.side}</span>
+      </div>
+    </div>
+    <div style="padding:14px">
+      <div id="db-ai" style="display:none;padding:10px;background:rgba(231,76,60,.07);border:1px solid rgba(231,76,60,.15);border-radius:var(--r-sm);margin-bottom:10px;font-size:12px;color:var(--text2)"></div>
+      <div id="db-rl" style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:6px">РАУНД 1 / 3</div>
+      <textarea class="ta" id="db-inp" placeholder="Твой аргумент..." style="min-height:80px"></textarea>
+      <button class="btn btn-gold btn-sm" style="margin-top:8px" id="db-btn" onclick="submitDeb('${key}')">Ответить ↗</button>
+      <div id="db-res" style="display:none;margin-top:10px"></div>
+    </div>
+  </div>`;
+  startTimer('train',180,s=>{const e=document.getElementById('db-t');if(e)e.textContent=fmtT(s)},()=>{});
+}
+async function submitDeb(key){
+  if(DS.done)return;const v=(document.getElementById('db-inp')?.value||'').trim();if(!v)return;
+  clearInterval(TM.train);
+  document.getElementById('db-btn')?.setAttribute('disabled','true');
+  const p=`Оцени аргумент "${v}" для позиции "${DS.side}" по тезису "${DS.q}". Раунд ${DS.round}/3. JSON: {"score":NN,"fb":"1 предложение","counter":"1-2 предложения контраргумент","xp":NN}. score 0-100, xp 10-40.`;
+  try{
+    const r=await claudeAPI(p);const j=JSON.parse(r.replace(/```json|```/g,'').trim());
+    DS.total+=j.score;
+    const aiEl=document.getElementById('db-ai');if(aiEl){aiEl.style.display='block';aiEl.innerHTML=`<b style="color:var(--rose);font-size:9px;text-transform:uppercase">Контраргумент AI:</b><br>${j.counter}`;}
+    document.getElementById('db-inp').value='';
+    if(DS.round>=3){
+      DS.done=true;const avg=Math.round(DS.total/3);const xp=j.xp*3+Math.round(avg/5);
+      addSkill('argumentation',Math.round(xp/10));showResult('db-res',avg,xp,getPraise(avg),'⚔️ Аргументация',avg>=60,key);addXP(xp,'Дебаты');trackGame(key,avg);
+    }else{
+      DS.round++;document.getElementById('db-rl').textContent=`РАУНД ${DS.round} / 3`;
+      const btn=document.getElementById('db-btn');if(btn){btn.removeAttribute('disabled');btn.textContent='Следующий аргумент ↗';}
+      startTimer('train',180,s=>{const e=document.getElementById('db-t');if(e)e.textContent=fmtT(s)},()=>{});
+      notify('xp',`Раунд ${DS.round-1}: ${j.score}/100`,j.fb,2500);
+    }
+  }catch(e){document.getElementById('db-btn')?.removeAttribute('disabled');}
+}
+
+// ─── SEQUENCE ───
+const SEQ_D=[{s:[1,1,2,3,5,8,13],a:'21',h:'Фибоначчи'},{s:[2,4,8,16,32],a:'64',h:'Удвоение'},{s:[1,4,9,16,25],a:'36',h:'Квадраты'},{s:[100,91,83,76,70],a:'65',h:'Разница убывает'},{s:[3,6,12,24,48],a:'96',h:'×2'}];
+let SQD=null;
+function initSeq(){
+  SQD=SEQ_D[Math.floor(Math.random()*SEQ_D.length)];
+  document.getElementById('g-body').innerHTML=`<div class="card">
+    <div style="font-family:monospace;font-size:26px;font-weight:700;text-align:center;color:var(--gold);padding:18px;background:var(--surface2);border-radius:var(--r-sm);margin-bottom:14px;letter-spacing:.08em">${SQD.s.join(' → ')} → <span style="color:var(--text3)">?</span></div>
+    <div style="font-size:11px;color:var(--text3);font-style:italic;margin-bottom:12px">Подсказка: ${SQD.h}</div>
+    <div style="display:flex;gap:7px">
+      <input class="ta" id="sq-inp" placeholder="Ответ..." style="min-height:auto;padding:9px 11px;flex:1;font-size:18px;text-align:center" onkeydown="if(event.key==='Enter')checkSeq()">
+      <button class="btn btn-gold" onclick="checkSeq()">✓</button>
+    </div>
+    <div id="sq-fb" style="font-size:12px;margin-top:8px;min-height:18px"></div>
+    <div id="sq-res" style="display:none;margin-top:10px"></div>
+  </div>`;
+}
+function checkSeq(){
+  const v=(document.getElementById('sq-inp')?.value||'').trim();
+  const fb=document.getElementById('sq-fb');
+  if(v===SQD.a){addSkill('logic',4);if(fb)fb.innerHTML='<span style="color:var(--emerald);font-size:15px;font-weight:700">✓ Верно!</span>';setTimeout(()=>{showResult('sq-res',100,40,getPraise(100),'🔬 Логика',true,'sequence');addXP(40,'Последовательность');trackGame('sequence',100);},900);}
+  else{if(fb)fb.innerHTML=`<span style="color:var(--rose)">✗ Неверно. Проверь: ${SQD.h}</span>`;}
+}
+
+// ─── FAST FACTS ───
+const FF_Q=[{q:'Столица Казахстана?',a:'астана'},{q:'Секунд в минуте?',a:'60'},{q:'Самый большой орган тела?',a:'кожа'},{q:'√144=?',a:'12'},{q:'2^10=?',a:'1024'},{q:'Букв в русском алфавите?',a:'33'},{q:'Планета ближайшая к Солнцу?',a:'меркурий'},{q:'Месяцев в году?',a:'12'}];
+let FF={};
+function initFastFacts(){
+  FF={qs:[...FF_Q].sort(()=>Math.random()-.5).slice(0,5),i:0,c:0};
+  document.getElementById('g-body').innerHTML=`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+    <div style="display:flex;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border)">
+      <span id="ff-prog" style="font-size:12px">Вопрос 1/5</span>
+      <span id="ff-t" style="font-family:monospace;font-size:13px;color:var(--gold);background:var(--gold-glow);padding:3px 8px;border-radius:5px">0:30</span>
+    </div>
+    <div style="padding:16px">
+      <div id="ff-q" style="font-size:17px;font-weight:700;margin-bottom:14px;min-height:48px"></div>
+      <div style="display:flex;gap:7px">
+        <input class="ta" id="ff-inp" placeholder="Ответ..." style="min-height:auto;padding:9px 11px;flex:1" onkeydown="if(event.key==='Enter')checkFF()">
+        <button class="btn btn-gold" onclick="checkFF()">✓</button>
+      </div>
+      <div id="ff-fb" style="font-size:12px;margin-top:7px;min-height:16px"></div>
+      <div id="ff-res" style="display:none;margin-top:10px"></div>
+    </div>
+  </div>`;
+  showFFQ();startTimer('train',30,s=>{const e=document.getElementById('ff-t');if(e)e.textContent=fmtT(s)},()=>nextFF(false));
+}
+function showFFQ(){const q=FF.qs[FF.i];if(!q){endFF();return;}document.getElementById('ff-q').textContent=q.q;document.getElementById('ff-prog').textContent=`Вопрос ${FF.i+1}/${FF.qs.length}`;const i=document.getElementById('ff-inp');if(i){i.value='';i.focus();}}
+function checkFF(){const v=(document.getElementById('ff-inp')?.value||'').trim().toLowerCase();const q=FF.qs[FF.i];const ok=v===q.a||q.a.includes(v)&&v.length>2;if(ok)FF.c++;const fb=document.getElementById('ff-fb');if(fb)fb.innerHTML=ok?'<span style="color:var(--emerald)">✓ Правильно!</span>':`<span style="color:var(--rose)">✗ Ответ: ${q.a}</span>`;setTimeout(()=>nextFF(true),700);}
+function nextFF(auto){clearInterval(TM.train);FF.i++;document.getElementById('ff-prog').textContent=`Вопрос ${Math.min(FF.i+1,FF.qs.length)}/${FF.qs.length}`;if(FF.i>=FF.qs.length){endFF();return;}showFFQ();if(auto)startTimer('train',30,s=>{const e=document.getElementById('ff-t');if(e)e.textContent=fmtT(s)},()=>nextFF(false));}
+function endFF(){clearInterval(TM.train);const sc=Math.round(FF.c/FF.qs.length*100);const xp=FF.c*12;addSkill('speed',FF.c*2);showResult('ff-res',sc,xp,getPraise(sc),'⚡ Скорость',sc>=60,'fast_facts');if(xp>0)addXP(xp,'Быстрые факты');trackGame('fast_facts',sc);}
+
+// ─── MEMORY PALACE ───
+const PAL_D=[{t:'Список',items:['🍎 Яблоки','🥛 Молоко','🍞 Хлеб','🧀 Сыр','☕ Кофе'],sec:10},{t:'Числа',items:['47','83','21','69','15'],sec:8},{t:'Столицы',items:['Астана','Токио','Лондон','Берлин','Париж'],sec:12}];
+let PL={};
+function initPalace(){
+  PL={d:PAL_D[Math.floor(Math.random()*PAL_D.length)],ph:'mem'};
+  document.getElementById('g-body').innerHTML=`<div class="card">
+    <div style="font-size:12px;color:var(--text2);margin-bottom:8px">Тема: <b>${PL.d.t}</b> — запомни за ${PL.d.sec} сек!</div>
+    <div id="pal-items" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:7px;margin-bottom:14px">
+      ${PL.d.items.map((it,i)=>`<div style="padding:9px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);text-align:center;font-size:13px;font-weight:600"><span style="font-size:9px;color:var(--text3);display:block">${i+1}</span>${it}</div>`).join('')}
+    </div>
+    <button class="btn btn-gold btn-block" id="pal-hide" onclick="hidePalace()">Запомнил — скрыть! (${PL.d.sec}с)</button>
+    <div id="pal-recall" style="display:none;margin-top:12px"></div>
+    <div id="pal-res" style="display:none;margin-top:10px"></div>
+  </div>`;
+  let r=PL.d.sec;const iv=setInterval(()=>{r--;const b=document.getElementById('pal-hide');if(b)b.textContent=`Запомнил! (${r}с)`;if(r<=0){clearInterval(iv);hidePalace();}},1000);
+}
+function hidePalace(){
+  document.getElementById('pal-items').style.display='none';document.getElementById('pal-hide').style.display='none';
+  const rc=document.getElementById('pal-recall');rc.style.display='block';
+  rc.innerHTML=`<div style="font-size:12px;font-weight:700;margin-bottom:9px">Воспроизведи список:</div>${PL.d.items.map((_,i)=>`<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px"><span style="font-size:10px;color:var(--text3);min-width:14px">${i+1}.</span><input class="ta" id="pal-${i}" placeholder="Пункт ${i+1}..." style="min-height:auto;padding:8px 11px;flex:1"></div>`).join('')}<button class="btn btn-gold" onclick="checkPalace()" style="margin-top:4px">Проверить</button>`;
+}
+function checkPalace(){
+  let c=0;PL.d.items.forEach((it,i)=>{const v=(document.getElementById(`pal-${i}`)?.value||'').trim().toLowerCase();const ex=it.toLowerCase().replace(/[^a-zа-яё0-9]/g,' ').trim();if(v&&(ex.includes(v)||v.includes(ex.split(' ').pop()||'')))c++;});
+  const sc=Math.round(c/PL.d.items.length*100);const xp=c*15;addSkill('memory',Math.round(xp/8));showResult('pal-res',sc,xp,getPraise(sc),'🏛️ Память',sc>=60,'memory_palace');if(xp>0)addXP(xp,'Дворец памяти');trackGame('memory_palace',sc);
+}
+
+// ─── GENERIC RESULT ───
+function showResult(id,score,xp,praise,skillLbl,won,gameKey){
+  const el=document.getElementById(id);if(!el)return;
+  el.style.display='block';
+  el.innerHTML=`<div class="result-box">
+    <div class="res-praise">${praise}</div>
+    <div class="res-score" style="color:${score>=70?'var(--emerald)':score>=40?'var(--gold)':'var(--rose)'}">${score}</div>
+    <div class="res-label">из 100 · ${skillLbl}</div>
+    <div class="res-xp">+${xp} XP</div>
+    ${won?'<div style="font-size:12px;color:var(--emerald);font-weight:700;margin:6px 0">🎉 Отличный результат!</div>':''}
+    <div class="gap8" style="justify-content:center;margin-top:10px">
+      <button class="btn btn-gold btn-sm" onclick="startTraining('${gameKey}')">Ещё раз</button>
+      <button class="btn btn-ghost btn-sm" onclick="go('training')">К играм</button>
+      <button class="btn btn-ghost btn-sm" onclick="go('battle')">В бой!</button>
+    </div>
+  </div>`;
+  G.totalTrainings++;updateSidebar();
+}
+
+// ═══════════════════════════════════════
+// AI COACH
+// ═══════════════════════════════════════
+let CH=[];
+async function coachSend(){
+  const inp=document.getElementById('coach-inp');const msg=inp.value.trim();if(!msg)return;
+  inp.value='';appendMsg('u',msg);CH.push({role:'user',content:msg});
+  const t=appendMsg('a','<span class="dots">Думаю</span>',true);
+  const sys=`Ты — когнитивный тренер RPG-игры MindForge. Стиль: прямой, честный, мотивирующий, с нотками фэнтезийного мастера.
+Профиль: ${G.name}, класс=${G.heroClass}, ур.=${G.level}, XP=${G.xp}, навыки: память=${G.skills.memory}, логика=${G.skills.logic}, аргументация=${G.skills.argumentation}, компрессия=${G.skills.compression}, скорость=${G.skills.speed}.
+Отвечай кратко (3-5 предложений). Иногда давай конкретные задачи или провокационные вопросы.`;
+  try{const r=await claudeAPIFull(sys,CH.slice(-10));t.remove();appendMsg('a',r);CH.push({role:'assistant',content:r});addXP(3,'AI-тренер');}
+  catch(e){t.remove();appendMsg('a','Связь с наставником нарушена.');}
+}
+function coachQ(txt){document.getElementById('coach-inp').value=txt;coachSend();}
+function appendMsg(role,html,tmp=false){
+  const w=document.getElementById('coach-msgs');const el=document.createElement('div');
+  el.className=`cmsg ${role}${tmp?' loading':''}`;el.innerHTML=html;
+  w.appendChild(el);w.scrollTop=w.scrollHeight;return el;
+}
+
+// ═══════════════════════════════════════
+// CLAUDE API
+// ═══════════════════════════════════════
+async function claudeAPI(prompt){
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return d.content.map(c=>c.text||'').join('');
+}
+async function claudeAPIFull(sys,msgs){
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,system:sys,messages:msgs})});
+  const d=await r.json();if(d.error)throw new Error(d.error.message);
+  return d.content.map(c=>c.text||'').join('');
+}
+
+// ═══════════════════════════════════════
+// NOTIFICATIONS & FLOATS
+// ═══════════════════════════════════════
+function notify(type,title,sub,dur=3000){
+  const w=document.getElementById('notif-wrap');const el=document.createElement('div');el.className=`notif ${type}`;
+  el.innerHTML=`<div class="notif-ico">${{xp:'⚡',level:'⭐',win:'🏆',skill:'✨',info:'ℹ️'}[type]||'ℹ️'}</div><div class="notif-body"><div class="notif-title">${title}</div>${sub?`<div class="notif-sub">${sub}</div>`:''}</div>`;
+  w.appendChild(el);
+  setTimeout(()=>{el.style.animation='slideOut .3s ease forwards';setTimeout(()=>el.remove(),300);},dur);
+}
+function floatXP(txt,x,y){const el=document.createElement('div');el.className='xp-float';el.textContent=txt;el.style.cssText=`left:${x}px;top:${y}px;position:fixed`;document.body.appendChild(el);setTimeout(()=>el.remove(),1600);}
+
+// ═══════════════════════════════════════
+// INTRO
+// ═══════════════════════════════════════
+let pickedClass='mage';
+function pickClass(cls,el){pickedClass=cls;document.querySelectorAll('.cls-card').forEach(c=>c.classList.remove('picked'));el.classList.add('picked');}
+function beginGame(){
+  const n=(document.getElementById('name-inp')?.value||'').trim()||'Герой';
+  G.name=n;G.heroClass=pickedClass;
+  const cls=CLASSES[pickedClass];
+  G.skills[cls.bonus]=Math.max(G.skills[cls.bonus],10);
+  const today=new Date().toISOString().slice(0,10);
+  if(G.lastDay){const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);G.streak=G.lastDay===yest?G.streak+1:G.lastDay!==today?1:G.streak;}
+  G.lastDay=today;
+  if(!G.achievementsDone.includes('first_step'))G.achievementsDone.push('first_step');
+  getDaily();save();
+  document.getElementById('s-intro').classList.remove('on');
+  document.getElementById('s-main').classList.add('on');
+  updateSidebar();renderDash();addLog(`${cls.ico} ${n} начал путь!`);updateMapPos();
+  showUserBadge();
+  setTimeout(()=>notify('level','⚔️ Добро пожаловать!',`Путь ${cls.name} начат. Враги ждут!`,4000),600);
+}
+
+// ═══════════════════════════════════════
+// AUTH UI
+// ═══════════════════════════════════════
+function showAuthModal(mode='login'){
+  if(document.getElementById('auth-modal')) return;
+  const isConfigured = SB_URL !== 'REPLACE_WITH_YOUR_SUPABASE_URL';
+  const modal = document.createElement('div');
+  modal.id = 'auth-modal';
+  modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px;backdrop-filter:blur(8px)';
+  modal.innerHTML = `
+    <div style="background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:24px 20px;max-width:340px;width:100%;text-align:center">
+      <div style="font-size:32px;margin-bottom:10px">🧠</div>
+      <div style="font-family:var(--display);font-size:18px;color:var(--gold);margin-bottom:4px">MindForge RPG</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:18px">Войди — прогресс синхронизируется между всеми устройствами</div>
+      ${!isConfigured ? `<div style="padding:10px;background:rgba(231,76,60,.1);border:1px solid rgba(231,76,60,.25);border-radius:8px;font-size:11px;color:var(--rose);margin-bottom:14px;text-align:left">⚠️ Supabase не настроен. Сначала вставь URL и ключ (см. инструкцию ниже), или нажми «Играть без входа».</div>` : ''}
+      <div style="display:flex;gap:0;margin-bottom:16px;background:var(--surface2);border-radius:8px;padding:3px">
+        <button id="tab-login" onclick="switchAuthTab('login')" style="flex:1;padding:7px;border-radius:6px;font-size:12px;font-weight:700;border:none;cursor:pointer;transition:all .15s;background:${mode==='login'?'var(--purple)':'transparent'};color:${mode==='login'?'#fff':'var(--text2)'}">Войти</button>
+        <button id="tab-reg" onclick="switchAuthTab('reg')" style="flex:1;padding:7px;border-radius:6px;font-size:12px;font-weight:700;border:none;cursor:pointer;transition:all .15s;background:${mode==='reg'?'var(--purple)':'transparent'};color:${mode==='reg'?'#fff':'var(--text2)'}">Регистрация</button>
+      </div>
+      <input id="auth-email" type="email" placeholder="Email" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-size:14px;margin-bottom:8px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='var(--purple)'" onblur="this.style.borderColor='var(--border)'">
+      <input id="auth-pass" type="password" placeholder="Пароль (мин. 6 символов)" style="width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:11px 13px;color:var(--text);font-size:14px;margin-bottom:12px;outline:none;transition:border-color .2s" onfocus="this.style.borderColor='var(--purple)'" onblur="this.style.borderColor='var(--border)'" onkeydown="if(event.key==='Enter')submitAuth()">
+      <div id="auth-err" style="font-size:11px;color:var(--rose);margin-bottom:8px;min-height:16px"></div>
+      <button onclick="submitAuth()" id="auth-submit" class="btn btn-purple btn-block" style="margin-bottom:10px;font-size:14px">
+        <span id="auth-btn-text">${mode==='login'?'Войти ⚔️':'Создать героя ⚔️'}</span>
+      </button>
+      <button onclick="playOffline()" class="btn btn-ghost btn-block" style="font-size:12px">Играть без входа (только на этом устройстве)</button>
+    </div>`;
+  document.body.appendChild(modal);
+}
+
+function switchAuthTab(mode){
+  document.getElementById('tab-login').style.background = mode==='login'?'var(--purple)':'transparent';
+  document.getElementById('tab-login').style.color = mode==='login'?'#fff':'var(--text2)';
+  document.getElementById('tab-reg').style.background = mode==='reg'?'var(--purple)':'transparent';
+  document.getElementById('tab-reg').style.color = mode==='reg'?'#fff':'var(--text2)';
+  document.getElementById('auth-btn-text').textContent = mode==='login'?'Войти ⚔️':'Создать героя ⚔️';
+  document.getElementById('auth-modal').dataset.mode = mode;
+}
+
+async function submitAuth(){
+  const email = document.getElementById('auth-email').value.trim();
+  const pass  = document.getElementById('auth-pass').value;
+  const mode  = document.getElementById('auth-modal')?.dataset.mode || 'login';
+  const errEl = document.getElementById('auth-err');
+  const btn   = document.getElementById('auth-submit');
+  if(!email||!pass){ errEl.textContent='Заполни оба поля'; return; }
+  btn.disabled=true; btn.textContent='Подождите...';
+  errEl.textContent='';
+  try{
+    if(mode==='reg'){
+      await sbSignUp(email, pass);
+      // After signup, sign in immediately
+      await sbSignIn(email, pass);
+    } else {
+      await sbSignIn(email, pass);
+    }
+    // Load cloud save
+    const hadCloud = await loadCloud();
+    document.getElementById('auth-modal')?.remove();
+    if(hadCloud && G.name && G.name!=='Герой'){
+      document.getElementById('name-inp').value = G.name;
+      enterGame();
+      notify('info','☁️ Прогресс загружен',`${G.name} — уровень ${G.level}. Добро пожаловать!`,4000);
+    } else {
+      // New user — show intro
+      showUserBadge();
+    }
+  }catch(e){
+    errEl.textContent = e.message;
+    btn.disabled=false;
+    document.getElementById('auth-btn-text').textContent = mode==='login'?'Войти ⚔️':'Создать героя ⚔️';
+  }
+}
+
+function playOffline(){
+  document.getElementById('auth-modal')?.remove();
+  loadLocal(); // try local
+  if(G.name && G.name!=='Герой'){
+    document.getElementById('name-inp').value=G.name;
+    enterGame();
+    notify('info','💾 Локальный режим','Прогресс сохраняется только на этом устройстве',3000);
+  } else {
+    showUserBadge();
+  }
+}
+
+function showUserBadge(){
+  // Show logged-in user indicator in sidebar
+  if(SB_USER){
+    const email = SB_USER.email;
+    let el = document.getElementById('user-badge');
+    if(!el){
+      el=document.createElement('div');el.id='user-badge';
+      el.style.cssText='padding:6px 12px;font-size:9px;color:var(--text3);border-top:1px solid var(--border);text-align:center;display:flex;align-items:center;justify-content:center;gap:5px';
+      document.querySelector('.sb-stats')?.after(el);
+    }
+    el.innerHTML=`<span style="color:var(--emerald)">☁️</span>${email.split('@')[0]} <button onclick="doSignOut()" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:9px;text-decoration:underline">выйти</button>`;
+  }
+}
+
+async function doSignOut(){
+  await sbSignOut();
+  try{localStorage.removeItem(SAVE_LOCAL);}catch(e){}
+  location.reload();
+}
+
+// ═══════════════════════════════════════
+// ENTER GAME (after auth or local)
+// ═══════════════════════════════════════
+function enterGame(){
+  const today=new Date().toISOString().slice(0,10);
+  if(G.lastDay){const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);G.streak=G.lastDay===yest?G.streak+1:G.lastDay!==today?1:G.streak;}
+  G.lastDay=today;
+  getDaily();save();
+  document.getElementById('s-intro').classList.remove('on');
+  document.getElementById('s-main').classList.add('on');
+  updateSidebar();renderDash();addLog(`👋 Снова в бою!`);updateMapPos();
+  showUserBadge();
+  setTimeout(()=>notify('info','👋 С возвращением!',`${G.name} — уровень ${G.level}, продолжаем!`,3500),600);
+}
+
+// ═══════════════════════════════════════
+// BOOT
+// ═══════════════════════════════════════
+(async function boot(){
+  const isConfigured = SB_URL !== 'REPLACE_WITH_YOUR_SUPABASE_URL';
+
+  if(isConfigured){
+    // Try to restore session from localStorage
+    const hadSession = restoreSession();
+    if(hadSession){
+      // Load cloud save
+      const hadCloud = await loadCloud();
+      if(!hadCloud) loadLocal();
+      if(G.name && G.name!=='Герой'){
+        document.getElementById('name-inp').value=G.name;
+        enterGame();
+        return;
+      }
+    }
+    // No session — show auth modal
+    showAuthModal('login');
+  } else {
+    // Supabase not configured — try local save, then show intro or game
+    const hadLocal = loadLocal();
+    if(hadLocal && G.name && G.name!=='Герой'){
+      document.getElementById('name-inp').value=G.name;
+      enterGame();
+    }
+    // Don't show auth modal if not configured — just let them play
+  }
+})();
+</script>
+</body>
+</html>
