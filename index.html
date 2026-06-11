@@ -1806,7 +1806,7 @@ function beginGame(){
 // ═══════════════════════════════════════
 function showAuthModal(mode='login'){
   if(document.getElementById('auth-modal')) return;
-  const isConfigured = SB_URL !== 'REPLACE_WITH_YOUR_SUPABASE_URL';
+  const isConfigured = SB_URL !== 'https://ipeicmyztlkagqcaiakt.supabase.co';
   const modal = document.createElement('div');
   modal.id = 'auth-modal';
   modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;z-index:200;padding:16px;backdrop-filter:blur(8px)';
