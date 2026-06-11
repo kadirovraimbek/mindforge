@@ -515,15 +515,12 @@ async function sbFetch(path, method='GET', body=null){
 
 // Detect new vs legacy key format
 function getAuthHeaders(token){
-  const isNew = SB_KEY.startsWith('sb_publishable_') || SB_KEY.startsWith('sb_');
-  const h = {'Content-Type':'application/json'};
-  if(isNew){
-    h['Authorization'] = `Bearer ${token || SB_KEY}`;
-  } else {
-    h['apikey'] = SB_KEY;
-    if(token) h['Authorization'] = `Bearer ${token}`;
-  }
-  return h;
+  // Always send both headers — Supabase requires apikey for REST, Authorization for auth
+  return {
+    'Content-Type': 'application/json',
+    'apikey': SB_KEY,
+    'Authorization': `Bearer ${token || SB_KEY}`,
+  };
 }
 
 // Auth: sign up
@@ -608,13 +605,21 @@ async function saveCloud(){
 async function loadCloud(){
   if(!SB_USER) return false;
   try{
+    console.log('[loadCloud] fetching for user:', SB_USER.id);
     const rows = await sbFetch(`/rest/v1/player_saves?user_id=eq.${SB_USER.id}&select=game_state&limit=1`);
+    console.log('[loadCloud] rows:', JSON.stringify(rows));
     if(rows && rows.length > 0 && rows[0].game_state){
-      Object.assign(G, rows[0].game_state);
-      saveLocal(); // sync to local too
+      const gs = rows[0].game_state;
+      // game_state may be a string or object depending on Supabase version
+      const parsed = typeof gs === 'string' ? JSON.parse(gs) : gs;
+      console.log('[loadCloud] parsed name:', parsed.name, 'xp:', parsed.xp);
+      Object.assign(G, parsed);
+      saveLocal();
       return true;
+    } else {
+      console.log('[loadCloud] no rows found');
     }
-  }catch(e){ console.warn('Cloud load failed:', e.message); }
+  }catch(e){ console.warn('[loadCloud] failed:', e.message); }
   return false;
 }
 
